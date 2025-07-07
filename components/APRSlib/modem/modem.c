@@ -569,7 +569,7 @@ void ModemTxTestStop(void) {
 void ModemTransmitStart(void) {
     txTestState = TEST_DISABLED;
     setPtt(true); // PTT on
-    delay(50);
+    port_delay(50);
     hw_afsk_dac_isr = true;
     AFSK_TimerEnable(false);
     DAC_TimerEnable(true);

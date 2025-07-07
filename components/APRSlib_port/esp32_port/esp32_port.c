@@ -42,11 +42,11 @@
 #include <hal/misc.h>
 #include <soc/syscon_struct.h>
 
-void delay(long msec) {
+void port_delay(long msec) {
     vTaskDelay(msec / portTICK_PERIOD_MS);
 }
 
-uint64_t millis(void) {
+uint64_t port_millis(void) {
     return esp_timer_get_time() / 1000;
 }
 

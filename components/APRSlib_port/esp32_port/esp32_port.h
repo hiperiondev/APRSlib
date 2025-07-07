@@ -54,9 +54,10 @@
             xSemaphoreGive((xI2CSemaphore));                                                                                                                   \
     }
 
-void delay(long msec);
-uint64_t millis(void);
+void port_delay(long msec);
+uint64_t port_millis(void);
 long port_random(uint32_t min, uint32_t max);
+
 void port_adc_continue_init(void);
 uint8_t port_adc_cali_raw_to_voltage(int raw, int *voltage);
 void port_sigmadelta_init(void);

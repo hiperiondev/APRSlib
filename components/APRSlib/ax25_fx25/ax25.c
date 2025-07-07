@@ -894,7 +894,7 @@ void Ax25TransmitBuffer(void) {
         return;
 
     if ((txFrameHead != txFrameTail) || txFrameBufferFull) {
-        txQuiet = (millis() + (Ax25Config.quietTime) + port_random(100, 2000)); // calculate required delay
+        txQuiet = (port_millis() + (Ax25Config.quietTime) + port_random(100, 2000)); // calculate required delay
         txInitStage = TX_INIT_WAITING;
     }
 }
@@ -924,7 +924,7 @@ void Ax25TransmitCheck(void) {
     if (txInitStage == TX_INIT_TRANSMITTING) // already transmitting
         return;
 
-    if (txQuiet < millis()) // quit time has elapsed
+    if (txQuiet < port_millis()) // quit time has elapsed
     {
         if (!ModemDcdState()) // channel is free
         {
@@ -940,7 +940,7 @@ void Ax25TransmitCheck(void) {
                 transmitStart();
             } else // still trying
             {
-                txQuiet = millis() + port_random(100, 1000); // try again after some random time
+                txQuiet = port_millis() + port_random(100, 1000); // try again after some random time
                 txRetries++;
             }
         }
@@ -971,7 +971,7 @@ void Ax25Init(uint8_t fx25Mode) {
     txDelay = ((float)Ax25Config.txDelayLength / (8.f * 1000.f / ModemGetBaudrate())); // change milliseconds to byte count
     txTail = ((float)Ax25Config.txTailLength / (8.f * 1000.f / ModemGetBaudrate()));
     txInitStage = TX_INIT_OFF;
-    txQuiet = (millis() + (Ax25Config.quietTime) + port_random(10, 200)); // calculate required delay
+    txQuiet = (port_millis() + (Ax25Config.quietTime) + port_random(10, 200)); // calculate required delay
 }
 
 void Ax25TxDelay(uint16_t delay_ms) {
@@ -981,7 +981,7 @@ void Ax25TxDelay(uint16_t delay_ms) {
 
 void Ax25TimeSlot(uint16_t ts) {
     Ax25Config.quietTime = ts;
-    txQuiet = (millis() + (Ax25Config.quietTime) + port_random(100, 1000)); // calculate required delay
+    txQuiet = (port_millis() + (Ax25Config.quietTime) + port_random(100, 1000)); // calculate required delay
 }
 
 //////////////////////////////////
