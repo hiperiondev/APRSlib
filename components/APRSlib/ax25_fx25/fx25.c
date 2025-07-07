@@ -37,43 +37,42 @@
 #define FX25_PREGENERATE_POLYS
 #define FX25_MAX_DISTANCE 10 // maximum Hamming distance when comparing tags
 
-const fx25mode_t Fx25ModeList[11] = {
-    //
-    { .tag = 0xB74DB7DF8A532F3E, .K = 239, .T = 16 }, //
-    { .tag = 0x26FF60A600CC8FDE, .K = 128, .T = 16 }, //
-    { .tag = 0xC7DC0508F3D9B09E, .K = 64, .T = 16 },  //
-    { .tag = 0x8F056EB4369660EE, .K = 32, .T = 16 },  //
-    { .tag = 0x6E260B1AC5835FAE, .K = 223, .T = 32 }, //
-    { .tag = 0xFF94DC634F1CFF4E, .K = 128, .T = 32 }, //
-    { .tag = 0x1EB7B9CDBC09C00E, .K = 64, .T = 32 },  //
-    { .tag = 0xDBF869BD2DBB1776, .K = 32, .T = 32 },  //
-    { .tag = 0x3ADB0C13DEAE2836, .K = 191, .T = 64 }, //
-    { .tag = 0xAB69DB6A543188D6, .K = 128, .T = 64 }, //
-    { .tag = 0x4A4ABEC4A724B796, .K = 64, .T = 64 }   //
+const fx25_mode_t fx25_mode_list[11] = {
+    { .correlation_tag = 0xB74DB7DF8A532F3E, .data_size = 239, .parity_check_size = 16 }, //
+    { .correlation_tag = 0x26FF60A600CC8FDE, .data_size = 128, .parity_check_size = 16 }, //
+    { .correlation_tag = 0xC7DC0508F3D9B09E, .data_size = 64, .parity_check_size = 16 },  //
+    { .correlation_tag = 0x8F056EB4369660EE, .data_size = 32, .parity_check_size = 16 },  //
+    { .correlation_tag = 0x6E260B1AC5835FAE, .data_size = 223, .parity_check_size = 32 }, //
+    { .correlation_tag = 0xFF94DC634F1CFF4E, .data_size = 128, .parity_check_size = 32 }, //
+    { .correlation_tag = 0x1EB7B9CDBC09C00E, .data_size = 64, .parity_check_size = 32 },  //
+    { .correlation_tag = 0xDBF869BD2DBB1776, .data_size = 32, .parity_check_size = 32 },  //
+    { .correlation_tag = 0x3ADB0C13DEAE2836, .data_size = 191, .parity_check_size = 64 }, //
+    { .correlation_tag = 0xAB69DB6A543188D6, .data_size = 128, .parity_check_size = 64 }, //
+    { .correlation_tag = 0x4A4ABEC4A724B796, .data_size = 64, .parity_check_size = 64 }   //
 };
 
-const fx25mode_t *Fx25GetModeForTag(uint64_t tag) {
-    for (uint8_t i = 0; i < sizeof(Fx25ModeList) / sizeof(*Fx25ModeList); i++) {
-        if (__builtin_popcountll(tag ^ Fx25ModeList[i].tag) <= FX25_MAX_DISTANCE)
-            return &Fx25ModeList[i];
+const fx25_mode_t *fx25_get_mode_for_tag(uint64_t tag) {
+    for (uint8_t i = 0; i < sizeof(fx25_mode_list) / sizeof(*fx25_mode_list); i++) {
+        if (__builtin_popcountll(tag ^ fx25_mode_list[i].correlation_tag) <= FX25_MAX_DISTANCE)
+            return &fx25_mode_list[i];
     }
     return NULL;
 }
 
-const fx25mode_t *Fx25GetModeForSize(uint16_t size) {
+const fx25_mode_t *fx25_get_mode_for_size(uint16_t size) {
     // use "UZ7HO Soundmodem standard" for choosing FX.25 mode
     if (size <= 32)
-        return &Fx25ModeList[3];
+        return &fx25_mode_list[3];
     else if (size <= 64)
-        return &Fx25ModeList[2];
+        return &fx25_mode_list[2];
     else if (size <= 128)
-        return &Fx25ModeList[5];
+        return &fx25_mode_list[5];
     else if (size <= 191)
-        return &Fx25ModeList[8];
+        return &fx25_mode_list[8];
     else if (size <= 223)
-        return &Fx25ModeList[4];
+        return &fx25_mode_list[4];
     else if (size <= 239)
-        return &Fx25ModeList[0];
+        return &fx25_mode_list[0];
     else
         return NULL; // frame too big, do not use FX.25
 }
@@ -84,10 +83,10 @@ static lwfecrs_t rs16, rs32, rs64;
 static struct LwFecRS rs;
 #endif
 
-void Fx25Encode(uint8_t *buffer, const fx25mode_t *mode) {
+void fx25_encode(uint8_t *buffer, const fx25_mode_t *mode) {
 #ifdef FX25_PREGENERATE_POLYS
     lwfecrs_t *rs = NULL;
-    switch (mode->T) {
+    switch (mode->parity_check_size) {
         case 16:
             rs = &rs16;
             break;
@@ -101,17 +100,17 @@ void Fx25Encode(uint8_t *buffer, const fx25mode_t *mode) {
             rs = &rs16;
             break;
     }
-    RsEncode(rs, buffer, mode->K);
+    RsEncode(rs, buffer, mode->data_size);
 #else
     RsInit(&rs, mode->T, FX25_RS_FCR);
     RsEncode(&rs, buffer, mode->K);
 #endif
 }
 
-bool Fx25Decode(uint8_t *buffer, const fx25mode_t *mode, uint8_t *fixed) {
+bool fx25_decode(uint8_t *buffer, const fx25_mode_t *mode, uint8_t *fixed) {
 #ifdef FX25_PREGENERATE_POLYS
     lwfecrs_t *rs = NULL;
-    switch (mode->T) {
+    switch (mode->parity_check_size) {
         case 16:
             rs = &rs16;
             break;
@@ -125,14 +124,14 @@ bool Fx25Decode(uint8_t *buffer, const fx25mode_t *mode, uint8_t *fixed) {
             rs = &rs16;
             break;
     }
-    return RsDecode(rs, buffer, mode->K, fixed);
+    return RsDecode(rs, buffer, mode->data_size, fixed);
 #else
     RsInit(&rs, mode->T, FX25_RS_FCR);
     return RsDecode(&rs, buffer, mode->K, fixed);
 #endif
 }
 
-void Fx25Init(void) {
+void fx25_init(void) {
 #ifdef FX25_PREGENERATE_POLYS
     RsInit(&rs16, 16, FX25_RS_FCR);
     RsInit(&rs32, 32, FX25_RS_FCR);

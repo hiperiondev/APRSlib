@@ -37,34 +37,34 @@
 // currently used only for 1200 Bd modem
 #define MODEM_MAX_DEMODULATOR_COUNT 2
 
-enum ModemType {
-    MODEM_1200 = 0,
+typedef enum ModemType_e {
+    MODEM_1200,
     MODEM_1200_V23,
     MODEM_300,
     MODEM_9600,
-};
+} modem_type_t;
 
 typedef enum ModemTxTestMode_e {
     TEST_DISABLED,
     TEST_MARK,
     TEST_SPACE,
     TEST_ALTERNATING,
-} modemtxtestmode_t;
+} modem_tx_test_mode_t;
 
 typedef struct ModemDemodConfig_s {
-    enum ModemType modem;
-    uint8_t usePWM : 1;      // 0 - use R2R, 1 - use PWM
-    uint8_t flatAudioIn : 1; // 0 - normal (deemphasized) audio input, 1 - flat audio (unfiltered) input
+    modem_type_t modem;
+    bool usePWM;      // 0 - use R2R, 1 - use PWM
+    bool flatAudioIn; // 0 - normal (deemphasized) audio input, 1 - flat audio (unfiltered) input
 } modem_demod_config_t;
 
 extern modem_demod_config_t ModemConfig;
 
 typedef enum ModemPrefilter_e {
-    PREFILTER_NONE = 0,
+    PREFILTER_NONE,
     PREFILTER_PREEMPHASIS,
     PREFILTER_DEEMPHASIS,
     PREFILTER_FLAT,
-} modemprefilter_t;
+} modem_prefilter_t;
 
 /**
  * @brief Get measured signal level
@@ -73,81 +73,81 @@ typedef enum ModemPrefilter_e {
  * @param *valley Output signal negative peak in %
  * @param *level Output signal level in %
  */
-void ModemGetSignalLevel(uint8_t modem, int8_t *peak, int8_t *valley, uint8_t *level);
+void modem_get_signal_level(uint8_t modem, int8_t *peak, int8_t *valley, uint8_t *level);
 
 /**
  * @brief Get current modem baudrate
  * @return Baudrate
  */
-float ModemGetBaudrate(void);
+float modem_get_baudrate(void);
 
 /**
  * @brief Get count of demodulators running in parallel
  * @return Count of demodulators
  */
-uint8_t ModemGetDemodulatorCount(void);
+uint8_t modem_get_demodulator_count(void);
 
 /**
  * @brief Get prefilter type (preemphasis, deemphasis etc.) for given modem
  * @param modem Modem number
  * @return Filter type
  */
-modemprefilter_t ModemGetFilterType(uint8_t modem);
+modem_prefilter_t modem_get_filter_type(uint8_t modem);
 
 /**
  * @brief Get current DCD state
  * @return 1 if channel busy, 0 if free
  */
-uint8_t ModemDcdState(void);
+uint8_t modem_dcd_state(void);
 
 /**
  * @brief Check if there is a TX test mode enabled
  * @return 1 if in TX test mode, 0 otherwise
  */
-uint8_t ModemIsTxTestOngoing(void);
+uint8_t modem_is_tx_test_ongoing(void);
 
 /**
  * @brief Clear modem RMS counter
  * @param number Modem number
  */
-void ModemClearRMS(uint8_t number);
+void modem_clear_rms(uint8_t number);
 
 /**
  * @brief Get RMS value for modem
  * @param number Modem number
  * @return RMS value
  */
-uint16_t ModemGetRMS(uint8_t number);
+uint16_t modem_get_rms(uint8_t number);
 
 /**
  * @brief Start or restart TX test mode
  * @param type TX test type: TEST_MARK, TEST_SPACE or TEST_ALTERNATING
  */
-void ModemTxTestStart(modemtxtestmode_t type);
+void modem_tx_test_start(modem_tx_test_mode_t type);
 
 /**
  * @brief Stop TX test mode
  */
-void ModemTxTestStop(void);
+void modem_tx_test_stop(void);
 
 /**
  * @brief Configure and start TX
  * @info This function is used internally by protocol module.
  * @warning Use Ax25TransmitStart() to initialize transmission
  */
-void ModemTransmitStart(void);
+void modem_transmit_start(void);
 
 /**
  * @brief Stop TX and go back to RX
  */
-void ModemTransmitStop(void);
+void modem_transmit_stop(void);
 
 /**
  * @brief Initialize modem module
  */
-void ModemInit(void);
+void modem_init(void);
 
-void MODEM_DECODE(int16_t sample, uint16_t mVrms);
-uint8_t MODEM_BAUDRATE_TIMER_HANDLER(void);
+void modem_decode(int16_t sample, uint16_t mVrms);
+uint8_t modem_baudrate_timer_handler(void);
 
 #endif

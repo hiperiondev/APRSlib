@@ -147,37 +147,37 @@ static float update_agc(float *input_buffer, size_t len) {
 static void hw_init(void) {
     // Set up ADC
     if (_sql_pin > -1) {
-        port_pinMode(_sql_pin, INPUT_PULLUP);
+        port_pin_mode(_sql_pin, INPUT_PULLUP);
     }
 
     if (_pwr_pin > -1) {
-        port_pinMode(_pwr_pin, OUTPUT);
+        port_pin_mode(_pwr_pin, OUTPUT);
     }
 
     if (_led_tx_pin > -1) {
-        port_pinMode(_led_tx_pin, OUTPUT);
+        port_pin_mode(_led_tx_pin, OUTPUT);
     }
 
     if (_led_rx_pin > -1) {
-        port_pinMode(_led_rx_pin, OUTPUT);
+        port_pin_mode(_led_rx_pin, OUTPUT);
     }
 
     if (_pwr_pin > -1) {
-        port_digitalWrite(_pwr_pin, !_pwr_active);
+        port_digital_write(_pwr_pin, !_pwr_active);
     }
 
     port_adc_continue_init();
     port_sigmadelta_init();
 
-    AFSK_setTransmit(false);
+    afsk_set_transmit(false);
 }
 
 ////////////////////////////////////////////////
 
-bool AFSK_getTransmit() {
+bool afsk_get_transmit() {
     bool ret = false;
 
-    if ((port_digitalRead(_ptt_pin) ^ _ptt_active) == 0) // signal active with ptt_active
+    if ((port_digital_read(_ptt_pin) ^ _ptt_active) == 0) // signal active with ptt_active
         ret = true;
     else
         ret = false;
@@ -187,16 +187,16 @@ bool AFSK_getTransmit() {
     return ret;
 }
 
-void AFSK_setTransmit(bool val) {
+void afsk_set_transmit(bool val) {
     hw_afsk_dac_isr = val;
 }
 
-bool AFSK_getReceive(void) {
+bool afsk_get_receive(void) {
     bool ret = false;
 
-    if ((port_digitalRead(_ptt_pin) ^ _ptt_active) == 0) // signal active with ptt_active
+    if ((port_digital_read(_ptt_pin) ^ _ptt_active) == 0) // signal active with ptt_active
         return false;                               // PTT Protection receive
-    if (port_digitalRead(LED_RX_PIN))                    // Check RX LED receiving.
+    if (port_digital_read(LED_RX_PIN))                    // Check RX LED receiving.
         ret = true;
 
     return ret;
@@ -206,35 +206,35 @@ bool AFSK_getReceive(void) {
  * @brief Controls PTT output
  * @param state False - PTT off, true - PTT on
  */
-void AFSK_setPtt(bool state) {
+void afsk_set_ptt(bool state) {
 
     if (state) {
-        AFSK_setTransmit(true);
+        afsk_set_transmit(true);
         if (_ptt_pin > 34)
             _ptt_pin = 32;
         if (_ptt_active) {
-            port_pinMode(_ptt_pin, OUTPUT);
-            port_digitalWrite(_ptt_pin, HIGH);
+            port_pin_mode(_ptt_pin, OUTPUT);
+            port_digital_write(_ptt_pin, HIGH);
         } else { // Open Collector to LOW
-            port_pinMode(_ptt_pin, OUTPUT_OPEN_DRAIN);
-            port_digitalWrite(_ptt_pin, LOW);
+            port_pin_mode(_ptt_pin, OUTPUT_OPEN_DRAIN);
+            port_digital_write(_ptt_pin, LOW);
         }
         port_led_status(255, 0, 0);
     } else {
-        AFSK_setTransmit(false);
+        afsk_set_transmit(false);
         port_queue_flush();
         if (_ptt_active) {
-            port_pinMode(_ptt_pin, OUTPUT);
-            port_digitalWrite(_ptt_pin, LOW);
+            port_pin_mode(_ptt_pin, OUTPUT);
+            port_digital_write(_ptt_pin, LOW);
         } else { // Open Collector to HIGH
-            port_pinMode(_ptt_pin, OUTPUT_OPEN_DRAIN);
-            port_digitalWrite(_ptt_pin, HIGH);
+            port_pin_mode(_ptt_pin, OUTPUT_OPEN_DRAIN);
+            port_digital_write(_ptt_pin, HIGH);
         }
         port_led_status(0, 0, 0);
     }
 }
 
-void AFSK_SetModem(uint8_t val, bool bpf, uint16_t timeSlot, uint16_t preamble, uint8_t fx25Mode) {
+void afsk_set_modem(uint8_t val, bool bpf, uint16_t timeSlot, uint16_t preamble, uint8_t fx25Mode) {
     if (bpf)
         ModemConfig.flatAudioIn = 1;
     else
@@ -272,20 +272,20 @@ void AFSK_SetModem(uint8_t val, bool bpf, uint16_t timeSlot, uint16_t preamble, 
     }
     log_i(TAG, "Modem: %d, SampleRate: %d, BlockSize: %d", ModemConfig.modem, SAMPLERATE, BLOCK_SIZE);
     ModemConfig.usePWM = 1;
-    ModemInit();
-    Ax25Init(fx25Mode);
+    modem_init();
+    ax25_init(fx25Mode);
     if (fx25Mode > 0)
-        Fx25Init();
-    Ax25TimeSlot(timeSlot);
-    Ax25TxDelay(preamble);
+        fx25_init();
+    ax25_time_slot(timeSlot);
+    ax25_tx_delay(preamble);
 }
 
-void AFSK_SetPTT(int8_t val, bool act) {
+void afsk_set_ptt_value(int8_t val, bool act) {
     _ptt_pin = val;
     _ptt_active = act;
 }
 
-void AFSK_init(int8_t adc_pin, int8_t dac_pin, int8_t ptt_pin, int8_t sql_pin, int8_t pwr_pin, int8_t led_tx_pin, int8_t led_rx_pin, int8_t led_strip_pin,
+void afsk_init(int8_t adc_pin, int8_t dac_pin, int8_t ptt_pin, int8_t sql_pin, int8_t pwr_pin, int8_t led_tx_pin, int8_t led_rx_pin, int8_t led_strip_pin,
                bool ptt_act, bool sql_act, bool pwr_act) {
 
     port_queue_init(768 * 2); // Instantiate queue
@@ -334,7 +334,7 @@ void AFSK_init(int8_t adc_pin, int8_t dac_pin, int8_t ptt_pin, int8_t sql_pin, i
     hw_init();
 }
 
-void AFSK_Poll(void) {
+void afsk_poll(void) {
     int mV;
     int x = 0;
     int16_t adc = 0;
@@ -343,7 +343,7 @@ void AFSK_Poll(void) {
     } else {
         if (audio_buffer != NULL) {
             tcb_t *tp = &tcb;
-            while (port_queue_getCount() >= BLOCK_SIZE) {
+            while (port_queue_getcount() >= BLOCK_SIZE) {
                 mVsum = 0;
                 mVsumCount = 0;
                 for (x = 0; x < BLOCK_SIZE; x++) {
@@ -404,7 +404,7 @@ void AFSK_Poll(void) {
                     for (int i = 0; i < BLOCK_SIZE / RESAMPLE_RATIO; i++) {
                         // Convert back to 12-bit audio (0-4095)
                         sample = audio_buffer[i] * 2048;
-                        MODEM_DECODE(sample, mVrms);
+                        modem_decode(sample, mVrms);
                     }
                 } else {
                     tp->cdt = false;

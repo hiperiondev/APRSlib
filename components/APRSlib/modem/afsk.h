@@ -76,6 +76,7 @@
 
 #define TCB_QUEUE_LENGTH    (1024 * 2)
 #define TCB_QUEUE_ITEM_SIZE sizeof(uint16_t)
+#define TCB_AVG_N           125 // 23
 
 #ifdef FX25_ENABLE
 typedef struct FX25TAG fx25tag_t;
@@ -83,17 +84,14 @@ typedef struct FX25TAG fx25tag_t;
 
 typedef struct TCB_s { // TNC Control Block
     port_TaskHandle_t task;
-
     uint8_t port; // port NO. 0 - 5
     uint16_t pkts;
-
     uint8_t state;
     uint8_t flag;
     uint8_t kiss_type; // indicate port number in upper nibble
     int data_cnt;
     uint8_t data_byte;
     uint8_t data_bit_cnt;
-
 #ifdef FX25_ENABLE
     // FX.25 variables
     uint8_t fx25_state;
@@ -112,18 +110,13 @@ typedef struct TCB_s { // TNC Control Block
     uint16_t fx25_cnt_fx25;
     uint16_t fx25_cnt_fcs_err;
 #endif
-
     // decode bit
     uint8_t pval;
     uint8_t nrzi;
     int adjust;
-
     // audio signal processing
     uint16_t avg;
     int avg_sum;
-
-#define TCB_AVG_N 125 // 23
-
     uint16_t avg_buf[TCB_AVG_N];
     uint8_t avg_idx;
     int cdt_lvl;
@@ -131,26 +124,15 @@ typedef struct TCB_s { // TNC Control Block
     int8_t cdt_led_pin;
     uint8_t cdt_led_on;
     port_SemaphoreHandle_t cdt_sem;
-
-    // FSK decode
-    uint8_t bit;
-
-#ifdef FX25TNCR2 // only rev.2 has STA LED
-    uint8_t sta_led_pin;
+    uint8_t bit; // FSK decode
+#ifdef FX25TNCR2
+    uint8_t sta_led_pin; // only rev.2 has STA LED
 #endif
-
     // kiss parameter
     uint8_t SlotTime;      // 10ms uint
     uint8_t TXDELAY;       // 10ms uint
     uint8_t persistence_P; // P = p * 256 - 1
     uint8_t fullDuplex;
-
-#ifdef ENABLE_TCM3105
-    int pll_adj;
-    uint32_t prev_ts;
-    uint8_t enable_tcm3105; // enable TCM3105 for the port if true
-    uint8_t cdt_off_timer;
-#endif
 } tcb_t;
 
 extern int offset;
@@ -170,14 +152,14 @@ inline static uint8_t sinSample(uint16_t i) {
     return (i >= (SIN_LEN / 2)) ? (255 - sine) : sine;
 }
 
-void AFSK_init(int8_t adc_pin, int8_t dac_pin, int8_t ptt_pin, int8_t sql_pin, int8_t pwr_pin, int8_t led_tx_pin, int8_t led_rx_pin, int8_t led_strip_pin,
+void afsk_init(int8_t adc_pin, int8_t dac_pin, int8_t ptt_pin, int8_t sql_pin, int8_t pwr_pin, int8_t led_tx_pin, int8_t led_rx_pin, int8_t led_strip_pin,
                bool ptt_act, bool sql_act, bool pwr_act);
-void AFSK_Poll(void);
-void AFSK_SetPTT(int8_t val, bool act);
-bool AFSK_getTransmit(void);
-void AFSK_setTransmit(bool val);
-bool AFSK_getReceive(void);
-void AFSK_SetModem(uint8_t val, bool bpf, uint16_t timeSlot, uint16_t preamble, uint8_t fx25Mode);
-void AFSK_setPtt(bool state);
+void afsk_poll(void);
+void afsk_set_ptt_value(int8_t val, bool act);
+bool afsk_get_transmit(void);
+void afsk_set_transmit(bool val);
+bool afsk_get_receive(void);
+void afsk_set_modem(uint8_t val, bool bpf, uint16_t timeSlot, uint16_t preamble, uint8_t fx25Mode);
+void afsk_set_ptt(bool state);
 
 #endif

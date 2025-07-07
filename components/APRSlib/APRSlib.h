@@ -31,9 +31,9 @@
 
 #include "APRSlib_version.h"
 
-#include "APRS.h"
+#include "aprs.h"
 #include "ax25.h"
-#include "KISS.h"
+#include "kiss.h"
 #include "modem.h"
 
 #endif /* APRSLIB_H_ */

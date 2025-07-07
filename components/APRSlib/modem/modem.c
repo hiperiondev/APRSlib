@@ -118,7 +118,7 @@ typedef struct DemodState_s {
     uint8_t rawSymbols;  // raw, unsynchronized symbols
     uint8_t syncSymbols; // synchronized symbols
 
-    modemprefilter_t prefilter;
+    modem_prefilter_t prefilter;
     filter_t bpf;
     int16_t correlatorSamples[NMAX];
     uint8_t correlatorSamplesIdx;
@@ -149,7 +149,7 @@ extern int8_t dacEn;
 extern bool hw_afsk_dac_isr;
 
 static uint8_t N;                                                              // samples per symbol
-static modemtxtestmode_t txTestState;                                          // current TX test mode
+static modem_tx_test_mode_t txTestState;                                          // current TX test mode
 static uint8_t demodCount;                                                     // actual number of parallel demodulators
 static uint8_t currentSymbol;                                                  // current symbol for NRZI encoding
 static uint8_t scrambledSymbol;                                                // current symbol after scrambling
@@ -284,32 +284,32 @@ static int32_t filter(filter_t *filter, int32_t input) {
     return out >> filter->gainShift;
 }
 
-float ModemGetBaudrate(void) {
+float modem_get_baudrate(void) {
     return baudRate;
 }
 
-uint8_t ModemGetDemodulatorCount(void) {
+uint8_t modem_get_demodulator_count(void) {
     return demodCount;
 }
 
-uint8_t ModemDcdState(void) {
+uint8_t modem_dcd_state(void) {
     return dcd;
 }
 
-uint8_t ModemIsTxTestOngoing(void) {
+uint8_t modem_is_tx_test_ongoing(void) {
     if (txTestState != TEST_DISABLED)
         return 1;
 
     return 0;
 }
 
-void ModemGetSignalLevel(uint8_t modem, int8_t *peak, int8_t *valley, uint8_t *level) {
+void modem_get_signal_level(uint8_t modem, int8_t *peak, int8_t *valley, uint8_t *level) {
     *peak = (100 * (int32_t)demodState[modem].peak) >> 12;
     *valley = (100 * (int32_t)demodState[modem].valley) >> 12;
     *level = (100 * (int32_t)(demodState[modem].peak - demodState[modem].valley)) >> 13;
 }
 
-modemprefilter_t ModemGetFilterType(uint8_t modem) {
+modem_prefilter_t modem_get_filter_type(uint8_t modem) {
     return demodState[modem].prefilter;
 }
 
@@ -347,7 +347,7 @@ static inline uint8_t scramble(uint8_t in) {
  * @brief ISR for demodulator
  */
 
-void MODEM_DECODE(int16_t sample, uint16_t mVrms) {
+void modem_decode(int16_t sample, uint16_t mVrms) {
     bool partialDcd = false;
 
     for (uint8_t i = 0; i < demodCount; i++) {
@@ -372,10 +372,10 @@ void MODEM_DECODE(int16_t sample, uint16_t mVrms) {
 /**
  * @brief ISR for baudrate generator timer. NRZI encoding is done here.
  */
-uint8_t MODEM_BAUDRATE_TIMER_HANDLER(void) {
+uint8_t modem_baudrate_timer_handler(void) {
     uint8_t sinwave = 0;
     if (sampleIndex == 0) {
-        if (Ax25GetTxBit() == 0) // get next bit and check if it's 0
+        if (ax25_get_tx_bit() == 0) // get next bit and check if it's 0
         {
             currentSymbol ^= 1; // change symbol - NRZI encoding
         }
@@ -530,10 +530,10 @@ static void decode(uint8_t symbol, uint8_t demod, uint16_t mV) {
         if (((dem->syncSymbols & 0x03) == 0b11) || ((dem->syncSymbols & 0x03) == 0b00)) // two last symbols are the same - no symbol transition - decoded bit 1
         {
 
-            Ax25BitParse(1, demod, mV);
+            ax25_bit_parse(1, demod, mV);
         } else // symbol transition - decoded bit 0
         {
-            Ax25BitParse(0, demod, mV);
+            ax25_bit_parse(0, demod, mV);
         }
     }
 
@@ -550,30 +550,30 @@ static void decode(uint8_t symbol, uint8_t demod, uint16_t mV) {
     }
 }
 
-void ModemTxTestStart(modemtxtestmode_t type) {
+void modem_tx_test_start(modem_tx_test_mode_t type) {
     if (txTestState != TEST_DISABLED) // TX test is already running
-        ModemTxTestStop();            // stop this test
+        modem_tx_test_stop();            // stop this test
 
-    AFSK_setPtt(true); // PTT on
+    afsk_set_ptt(true); // PTT on
     txTestState = type;
 }
 
-void ModemTxTestStop(void) {
+void modem_tx_test_stop(void) {
     txTestState = TEST_DISABLED;
     hw_afsk_dac_isr = false;
     dacEn = -1;
     adcEn = 1;
 
-    AFSK_setPtt(false); // PTT off
+    afsk_set_ptt(false); // PTT off
 }
 
-void ModemTransmitStart(void) {
+void modem_transmit_start(void) {
     txTestState = TEST_DISABLED;
-    AFSK_setPtt(true); // PTT on
+    afsk_set_ptt(true); // PTT on
     port_delay(50);
     hw_afsk_dac_isr = true;
-    port_TimerEnable(false);
-    port_DAC_TimerEnable(true);
+    port_timer_enable(false);
+    port_dac_timer_enable(true);
 
     log_i(TAG, "ModemTransmitStart");
 }
@@ -581,11 +581,11 @@ void ModemTransmitStart(void) {
 /**
  * @brief Stop TX and go back to RX
  */
-void ModemTransmitStop(void) {
-    AFSK_setPtt(false);
+void modem_transmit_stop(void) {
+    afsk_set_ptt(false);
 
     hw_afsk_dac_isr = false;
-    port_TimerEnable(false);
+    port_timer_enable(false);
     adcEn = 1;
 
     log_i(TAG, "ModemTransmitStop");
@@ -594,7 +594,7 @@ void ModemTransmitStop(void) {
 /**
  * @brief Initialize AFSK module
  */
-void ModemInit(void) {
+void modem_init(void) {
     memset(demodState, 0, sizeof(demodState));
 
     if (ModemConfig.modem > MODEM_9600)

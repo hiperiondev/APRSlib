@@ -123,18 +123,18 @@ extern int transmissionState;
  * @return Pointer to internal frame handle or NULL on failure
  * @attention This function will block if transmission is already in progress
  */
-void *Ax25WriteTxFrame(uint8_t *data, uint16_t size);
+void *ax25_write_tx_frame(uint8_t *data, uint16_t size);
 
 /**
  * @brief Get bitmap of "frame received" flags for each decoder. A non-zero value means that a frame was received
  * @return Bitmap of decoder that received the frame
  */
-uint8_t Ax25GetReceivedFrameBitmap(void);
+uint8_t ax25_get_received_frame_bitmap(void);
 
 /**
  * @brief Clear bitmap of "frame received" flags
  */
-void Ax25ClearReceivedFrameBitmap(void);
+void ax25_clear_received_frame_bitmap(void);
 
 /**
  * @brief Get next received frame (if available)
@@ -146,7 +146,7 @@ void Ax25ClearReceivedFrameBitmap(void);
  * @param *corrected Number of bytes corrected in FX.25 mode. 255 is returned if not a FX.25 packet.
  * @return True if frame was read, false if no more frames to read
  */
-bool Ax25ReadNextRxFrame(uint8_t **dst, uint16_t *size, int8_t *peak, int8_t *valley, uint8_t *level, uint8_t *corrected, uint16_t *mV);
+bool ax25_read_next_rx_frame(uint8_t **dst, uint16_t *size, int8_t *peak, int8_t *valley, uint8_t *level, uint8_t *corrected, uint16_t *mV);
 
 /**
  * @brief Get current RX stage
@@ -154,7 +154,7 @@ bool Ax25ReadNextRxFrame(uint8_t **dst, uint16_t *size, int8_t *peak, int8_t *va
  * @return RX_STATE_IDLE, RX_STATE_FLAG or RX_STATE_FRAME
  * @warning Only for internal use
  */
-ax25_rxstage_t Ax25GetRxStage(uint8_t modemNo);
+ax25_rxstage_t ax25_get_rx_stage(uint8_t modemNo);
 
 /**
  * @brief Parse incoming bit (not symbol!)
@@ -163,38 +163,36 @@ ax25_rxstage_t Ax25GetRxStage(uint8_t modemNo);
  * @param[in] *dem Modem state pointer
  * @warning Only for internal use
  */
-void Ax25BitParse(uint8_t bit, uint8_t modem, uint16_t mV);
+void ax25_bit_parse(uint8_t bit, uint8_t modem, uint16_t mV);
 
 /**
  * @brief Get next bit to be transmitted
  * @return Bit to be transmitted
  * @warning Only for internal use
  */
-uint8_t Ax25GetTxBit(void);
+uint8_t ax25_get_tx_bit(void);
 
 /**
  * @brief Initialize transmission and start when possible
  */
-void Ax25TransmitBuffer(void);
+void ax25_transmit_buffer(void);
 
 /**
  * @brief Start transmitting when possible
  * @attention Must be continuously polled in main loop
  */
-void Ax25TransmitCheck(void);
+void ax25_transmit_check(void);
 
 /**
  * @brief Initialize AX25 module
  */
-void Ax25Init(uint8_t fx25Mode);
+void ax25_init(uint8_t fx25Mode);
 
 void ax25_decode(uint8_t *buf, size_t len, uint16_t mVrms, ax25msg_t *msg);
-
 char ax25_encode(ax25frame_t *frame, char *txt, int size);
-// void ax25sendFrame(AX25Ctx *ctx,ax25frame *pkg);
-int hdlcFrame(uint8_t *outbuf, size_t outbuf_len, ax25ctx_t *ctx, ax25frame_t *pkg);
-void Ax25TxDelay(uint16_t delay_ms);
-void Ax25TimeSlot(uint16_t ts);
-bool Ax25NewRxFrames(void);
+int ax25_hdlc_frame(uint8_t *outbuf, size_t outbuf_len, ax25ctx_t *ctx, ax25frame_t *pkg);
+void ax25_tx_delay(uint16_t delay_ms);
+void ax25_time_slot(uint16_t ts);
+bool ax25_new_rx_frames(void);
 
 #endif /* AX25_H_ */

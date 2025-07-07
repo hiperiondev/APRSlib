@@ -70,17 +70,17 @@ char lastMessage[67];
 size_t lastMessageLen;
 bool message_autoAck = false;
 
-void APRS_init() {
+void aprs_init() {
     // AFSK_init();
     // Ax25Init(aprs_msg_callback);
     // ax25_init(&AX25, aprs_msg_callback);
 }
 
-void APRS_poll(void) {
+void aprs_poll(void) {
     // ax25_poll(&AX25);
 }
 
-void APRS_setCallsign(char *call, int ssid) {
+void aprs_set_callsign(char *call, int ssid) {
     memset(CALL, 0, 7);
     int i = 0;
 
@@ -92,7 +92,7 @@ void APRS_setCallsign(char *call, int ssid) {
     CALL_SSID = ssid;
 }
 
-void APRS_setDestination(char *call, int ssid) {
+void aprs_set_destination(char *call, int ssid) {
     memset(DST, 0, 7);
     int i = 0;
     while (i < 6 && call[i] != 0) {
@@ -102,7 +102,7 @@ void APRS_setDestination(char *call, int ssid) {
     DST_SSID = ssid;
 }
 
-void APRS_setPath1(char *call, int ssid) {
+void aprs_set_path1(char *call, int ssid) {
     memset(PATH1, 0, 7);
     int i = 0;
     while (i < 6 && call[i] != 0) {
@@ -112,7 +112,7 @@ void APRS_setPath1(char *call, int ssid) {
     PATH1_SSID = ssid;
 }
 
-void APRS_setPath2(char *call, int ssid) {
+void aprs_set_path2(char *call, int ssid) {
     memset(PATH2, 0, 7);
     int i = 0;
     while (i < 6 && call[i] != 0) {
@@ -122,7 +122,7 @@ void APRS_setPath2(char *call, int ssid) {
     PATH2_SSID = ssid;
 }
 
-void APRS_setMessageDestination(char *call, int ssid) {
+void aprs_set_message_destination(char *call, int ssid) {
     memset(message_recip, 0, 7);
     int i = 0;
     while (i < 6 && call[i] != 0) {
@@ -132,15 +132,15 @@ void APRS_setMessageDestination(char *call, int ssid) {
     message_recip_ssid = ssid;
 }
 
-void APRS_setPreamble(unsigned long pre) {
+void aprs_set_preamble(unsigned long pre) {
     custom_preamble = pre;
 }
 
-void APRS_setTail(unsigned long tail) {
+void aprs_set_tail(unsigned long tail) {
     custom_tail = tail;
 }
 
-void APRS_useAlternateSymbolTable(bool use) {
+void aprs_use_alternate_symbol_table(bool use) {
     if (use) {
         symbolTable = '\\';
     } else {
@@ -148,11 +148,11 @@ void APRS_useAlternateSymbolTable(bool use) {
     }
 }
 
-void APRS_setSymbol(char sym) {
+void aprs_set_symbol(char sym) {
     symbol = sym;
 }
 
-void APRS_setLat(char *lat) {
+void aprs_set_latitude(char *lat) {
     memset(latitude, 0, 9);
     int i = 0;
     while (i < 8 && lat[i] != 0) {
@@ -161,7 +161,7 @@ void APRS_setLat(char *lat) {
     }
 }
 
-void APRS_setLon(char *lon) {
+void aprs_set_longitude(char *lon) {
     memset(longtitude, 0, 10);
     int i = 0;
     while (i < 9 && lon[i] != 0) {
@@ -170,31 +170,31 @@ void APRS_setLon(char *lon) {
     }
 }
 
-void APRS_setPower(int s) {
+void aprs_set_power(int s) {
     if (s >= 0 && s < 10) {
         power = s;
     }
 }
 
-void APRS_setHeight(int s) {
+void aprs_set_height(int s) {
     if (s >= 0 && s < 10) {
         height = s;
     }
 }
 
-void APRS_setGain(int s) {
+void aprs_set_gain(int s) {
     if (s >= 0 && s < 10) {
         gain = s;
     }
 }
 
-void APRS_setDirectivity(int s) {
+void aprs_set_directivity(int s) {
     if (s >= 0 && s < 10) {
         directivity = s;
     }
 }
 
-void APRS_printSettings() {
+void aprs_print_settings() {
     log_i(TAG, "LibAPRS Settings:\n");
     log_i(TAG, "Callsign:     ");
     log_i(TAG, "%s", CALL);
@@ -270,7 +270,7 @@ void APRS_printSettings() {
     }
 }
 
-void APRS_sendPkt(void *_buffer, size_t length) {
+void aprs_send_packet(void *_buffer, size_t length) {
 
     //uint8_t *buffer = (uint8_t *)_buffer;
 
@@ -294,23 +294,23 @@ void APRS_sendPkt(void *_buffer, size_t length) {
     // ax25_sendVia(&AX25, path, countof(path), buffer, length);
 }
 
-void APRS_sendTNC2Pkt(const uint8_t *raw, size_t length) {
+void aprs_send_tnc2_packet(const uint8_t *raw, size_t length) {
     uint8_t data[300];
     int size = 0;
     ax25frame_t frame;
     ax25_encode(&frame, (char *)raw, length);
-    size = hdlcFrame(data, 300, &AX25, &frame);
+    size = ax25_hdlc_frame(data, 300, &AX25, &frame);
     log_i(TAG, "TX HDLC Fram size=%d", size);
     void *handle = NULL;
     if (size > 0) {
-        if (NULL != (handle = Ax25WriteTxFrame(data, size))) {
+        if (NULL != (handle = ax25_write_tx_frame(data, size))) {
             // Ax25TransmitCheck();
         }
     }
 }
 
 // Dynamic RAM usage of this function is 30 bytes
-void APRS_sendLoc(void *_buffer, size_t length) {
+void aprs_send_location(void *_buffer, size_t length) {
     size_t payloadLength = 20 + length;
     bool usePHG = false;
     if (power < 10 && height < 10 && gain < 10 && directivity < 9) {
@@ -342,12 +342,12 @@ void APRS_sendLoc(void *_buffer, size_t length) {
         memcpy(ptr, buffer, length);
     }
 
-    APRS_sendPkt(packet, payloadLength);
+    aprs_send_packet(packet, payloadLength);
     free(packet);
 }
 
 // Dynamic RAM usage of this function is 18 bytes
-void APRS_sendMsg(void *_buffer, size_t length) {
+void aprs_send_message(void *_buffer, size_t length) {
     if (length > 67)
         length = 67;
     size_t payloadLength = 11 + length + 4;
@@ -402,11 +402,11 @@ void APRS_sendMsg(void *_buffer, size_t length) {
     packet[13 + length] = d + 48;
     packet[14 + length] = n + 48;
 
-    APRS_sendPkt(packet, payloadLength);
+    aprs_send_packet(packet, payloadLength);
     free(packet);
 }
 
-void APRS_msgRetry() {
+void aprs_message_retry() {
     message_seq--;
-    APRS_sendMsg(lastMessage, lastMessageLen);
+    aprs_send_message(lastMessage, lastMessageLen);
 }

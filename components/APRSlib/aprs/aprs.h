@@ -33,33 +33,33 @@
 #include <stdint.h>
 #include <stddef.h>
  
-void APRS_init();
-void APRS_poll(void);
+void aprs_init();
+void aprs_poll(void);
 
-void APRS_setCallsign(char *call, int ssid);
-void APRS_setDestination(char *call, int ssid);
-void APRS_setMessageDestination(char *call, int ssid);
-void APRS_setPath1(char *call, int ssid);
-void APRS_setPath2(char *call, int ssid);
+void aprs_set_callsign(char *call, int ssid);
+void aprs_set_destination(char *call, int ssid);
+void aprs_set_message_destination(char *call, int ssid);
+void aprs_set_path1(char *call, int ssid);
+void aprs_set_path2(char *call, int ssid);
 
-void APRS_setPreamble(unsigned long pre);
-void APRS_setTail(unsigned long tail);
-void APRS_useAlternateSymbolTable(bool use);
-void APRS_setSymbol(char sym);
+void aprs_set_preamble(unsigned long pre);
+void aprs_set_tail(unsigned long tail);
+void aprs_use_alternate_symbol_table(bool use);
+void aprs_set_symbol(char sym);
 
-void APRS_setLat(char *lat);
-void APRS_setLon(char *lon);
-void APRS_setPower(int s);
-void APRS_setHeight(int s);
-void APRS_setGain(int s);
-void APRS_setDirectivity(int s);
+void aprs_set_latitude(char *lat);
+void aprs_set_longitude(char *lon);
+void aprs_set_power(int s);
+void aprs_set_height(int s);
+void aprs_set_gain(int s);
+void aprs_set_directivity(int s);
 
-void APRS_sendPkt(void *_buffer, size_t length);
-void APRS_sendLoc(void *_buffer, size_t length);
-void APRS_sendMsg(void *_buffer, size_t length);
-void APRS_msgRetry(void);
+void aprs_send_packet(void *_buffer, size_t length);
+void aprs_send_location(void *_buffer, size_t length);
+void aprs_send_message(void *_buffer, size_t length);
+void aprs_message_retry(void);
 
-void APRS_printSettings(void);
-void APRS_sendTNC2Pkt(const uint8_t *raw, size_t length);
+void aprs_print_settings(void);
+void aprs_send_tnc2_packet(const uint8_t *raw, size_t length);
 
 #endif /* APRS_H_ */

@@ -30,7 +30,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "KISS.h"
+#include "kiss.h"
 #include "ax25.h"
 
 extern ax25_protoconfig_t Ax25Config;
@@ -72,7 +72,7 @@ void kiss_serial(uint8_t sbyte) {
 
     if (IN_FRAME && sbyte == FEND && command == CMD_DATA) {
         IN_FRAME = false;
-        Ax25WriteTxFrame(serialBuffer, frame_len);
+        ax25_write_tx_frame(serialBuffer, frame_len);
     } else if (sbyte == FEND) {
         IN_FRAME = true;
         command = CMD_UNKNOWN;

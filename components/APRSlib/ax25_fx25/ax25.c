@@ -31,7 +31,7 @@
 #include <string.h>
 
 #include "APRSlib_port.h"
-#include "CRC-CCIT.h"
+#include "crc-ccit.h"
 #include "ax25.h"
 #include "modem.h"
 #ifdef ENABLE_FX25
@@ -75,7 +75,7 @@ static const char *TAG = "ax25";
 #define HDLC_RESET        0x7F
 #define AX25_ESC          0x1B
 
-enum TxStage {
+typedef enum TxStage_e {
     TX_STAGE_IDLE = 0,
     TX_STAGE_PREAMBLE,
     TX_STAGE_HEADER_FLAGS,
@@ -86,13 +86,13 @@ enum TxStage {
 #ifdef ENABLE_FX25
     TX_STAGE_CORRELATION_TAG, // stages used in FX.25 mode additionally
 #endif
-};
+} tx_stage_t;
 
-enum TxInitStage {       //
-    TX_INIT_OFF,         //
-    TX_INIT_WAITING,     //
-    TX_INIT_TRANSMITTING //
-};
+typedef enum TxInitStage_e { //
+    TX_INIT_OFF,             //
+    TX_INIT_WAITING,         //
+    TX_INIT_TRANSMITTING     //
+} tx_init_stage_t;
 
 typedef struct FrameHandle_s {
     uint16_t start;
@@ -153,8 +153,8 @@ static uint16_t txTailElapsed;       // counter of TXTail bytes already sent
 static uint16_t txCrc = 0xFFFF;      // current CRC
 static unsigned long txQuiet = 0;    // quit time + current tick value
 static uint8_t txRetries = 0;        // number of TX retries
-static enum TxInitStage txInitStage; // current TX initialization stage
-static enum TxStage txStage;         // current TX stage
+static tx_init_stage_t txInitStage; // current TX initialization stage
+static tx_stage_t txStage;           // current TX stage
 static rxstate_t rxState[MODEM_MAX_DEMODULATOR_COUNT];
 static uint16_t lastCrc = 0;          // CRC of the last received frame. If not 0, a frame was successfully received
 static uint16_t rxMultiplexDelay = 0; // simple delay for decoder multiplexer to avoid receiving the same frame twice
@@ -178,11 +178,11 @@ static void calculateCRC(uint8_t bit, uint16_t *crc) {
     }
 }
 
-uint8_t Ax25GetReceivedFrameBitmap(void) {
+uint8_t ax25_get_received_frame_bitmap(void) {
     return frameReceived;
 }
 
-void Ax25ClearReceivedFrameBitmap(void) {
+void ax25_clear_received_frame_bitmap(void) {
     frameReceived = 0;
 }
 
@@ -480,7 +480,7 @@ endParseFx25Frame:
 }
 #endif
 
-void *Ax25WriteTxFrame(uint8_t *data, uint16_t size) {
+void *ax25_write_tx_frame(uint8_t *data, uint16_t size) {
     if (txFrameBufferFull)
         return NULL;
 
@@ -518,7 +518,7 @@ void *Ax25WriteTxFrame(uint8_t *data, uint16_t size) {
     return ret;
 }
 
-bool Ax25ReadNextRxFrame(uint8_t **dst, uint16_t *size, int8_t *peak, int8_t *valley, uint8_t *level, uint8_t *corrected, uint16_t *mV) {
+bool ax25_read_next_rx_frame(uint8_t **dst, uint16_t *size, int8_t *peak, int8_t *valley, uint8_t *level, uint8_t *corrected, uint16_t *mV) {
     if ((rxFrameHead == rxFrameTail) && !rxFrameBufferFull)
         return false;
 
@@ -542,11 +542,11 @@ bool Ax25ReadNextRxFrame(uint8_t **dst, uint16_t *size, int8_t *peak, int8_t *va
     return true;
 }
 
-ax25_rxstage_t Ax25GetRxStage(uint8_t modem) {
+ax25_rxstage_t ax25_get_rx_stage(uint8_t modem) {
     return rxState[modem].rx;
 }
 
-void Ax25BitParse(uint8_t bit, uint8_t modem, uint16_t mV) {
+void ax25_bit_parse(uint8_t bit, uint8_t modem, uint16_t mV) {
     if (lastCrc != 0) // there was a frame received
     {
         rxMultiplexDelay++;
@@ -614,7 +614,7 @@ void Ax25BitParse(uint8_t bit, uint8_t modem, uint16_t mV) {
                             {
                                 rxFrame[rxFrameHead].start = rxBufferHead;
                                 rxFrame[rxFrameHead].mVrms = mV;
-                                ModemGetSignalLevel(modem, &rxFrame[rxFrameHead].peak, &rxFrame[rxFrameHead].valley, &rxFrame[rxFrameHead].level);
+                                modem_get_signal_level(modem, &rxFrame[rxFrameHead].peak, &rxFrame[rxFrameHead].valley, &rxFrame[rxFrameHead].level);
 #ifdef ENABLE_FX25
                                 rxFrame[rxFrameHead].fx25Mode = NULL;
 #endif
@@ -715,7 +715,7 @@ void Ax25BitParse(uint8_t bit, uint8_t modem, uint16_t mV) {
         rx->receivedByte >>= 1;
 }
 
-uint8_t Ax25GetTxBit(void) {
+uint8_t ax25_get_tx_bit(void) {
     if (txBitIdx == 8) {
         txBitIdx = 0;
         if (txStage == TX_STAGE_PREAMBLE) // transmitting preamble (TXDelay)
@@ -843,7 +843,7 @@ uint8_t Ax25GetTxBit(void) {
                 txByte = 0;
                 txInitStage = TX_INIT_OFF;
                 txBufferTail = txBufferHead;
-                ModemTransmitStop();
+                modem_transmit_stop();
                 return 0;
             }
         }
@@ -888,7 +888,7 @@ uint8_t Ax25GetTxBit(void) {
 /**
  * @brief Initialize transmission and start when possible
  */
-void Ax25TransmitBuffer(void) {
+void ax25_transmit_buffer(void) {
     if (txInitStage == TX_INIT_WAITING)
         return;
     if (txInitStage == TX_INIT_TRANSMITTING)
@@ -911,7 +911,7 @@ static void transmitStart(void) {
     txBitIdx = 0;
     txFlagsElapsed = 0;
     txDelayElapsed = 0;
-    ModemTransmitStart();
+    modem_transmit_start();
     log_i(TAG, "transmitStart");
 }
 
@@ -919,7 +919,7 @@ static void transmitStart(void) {
  * @brief Start transmitting when possible
  * @attention Must be continuously polled in main loop
  */
-void Ax25TransmitCheck(void) {
+void ax25_transmit_check(void) {
     if (txInitStage == TX_INIT_OFF) // TX not initialized at all, nothing to transmit
         return;
     if (txInitStage == TX_INIT_TRANSMITTING) // already transmitting
@@ -927,7 +927,7 @@ void Ax25TransmitCheck(void) {
 
     if (txQuiet < port_millis()) // quit time has elapsed
     {
-        if (!ModemDcdState()) // channel is free
+        if (!modem_dcd_state()) // channel is free
         {
             txInitStage = TX_INIT_TRANSMITTING; // transmit right now
             txRetries = 0;
@@ -948,7 +948,7 @@ void Ax25TransmitCheck(void) {
     }
 }
 
-void Ax25Init(uint8_t fx25Mode) {
+void ax25_init(uint8_t fx25Mode) {
     txCrc = 0xFFFF;
     memset(&Ax25Config, 0, sizeof(Ax25Config));
     Ax25Config.quietTime = 200;
@@ -969,18 +969,18 @@ void Ax25Init(uint8_t fx25Mode) {
     for (uint8_t i = 0; i < (sizeof(rxState) / sizeof(rxState[0])); i++)
         rxState[i].crc = 0xFFFF;
 
-    txDelay = ((float)Ax25Config.txDelayLength / (8.f * 1000.f / ModemGetBaudrate())); // change milliseconds to byte count
-    txTail = ((float)Ax25Config.txTailLength / (8.f * 1000.f / ModemGetBaudrate()));
+    txDelay = ((float)Ax25Config.txDelayLength / (8.f * 1000.f / modem_get_baudrate())); // change milliseconds to byte count
+    txTail = ((float)Ax25Config.txTailLength / (8.f * 1000.f / modem_get_baudrate()));
     txInitStage = TX_INIT_OFF;
     txQuiet = (port_millis() + (Ax25Config.quietTime) + port_random(10, 200)); // calculate required delay
 }
 
-void Ax25TxDelay(uint16_t delay_ms) {
+void ax25_tx_delay(uint16_t delay_ms) {
     Ax25Config.txDelayLength = delay_ms;
-    txDelay = ((float)Ax25Config.txDelayLength / (8.f * 1000.f / ModemGetBaudrate())); // change milliseconds to byte count
+    txDelay = ((float)Ax25Config.txDelayLength / (8.f * 1000.f / modem_get_baudrate())); // change milliseconds to byte count
 }
 
-void Ax25TimeSlot(uint16_t ts) {
+void ax25_time_slot(uint16_t ts) {
     Ax25Config.quietTime = ts;
     txQuiet = (port_millis() + (Ax25Config.quietTime) + port_random(100, 1000)); // calculate required delay
 }
@@ -1105,7 +1105,7 @@ uint8_t *ax25_putRaw(uint8_t *raw, ax25ctx_t *ctx, uint8_t c) {
     return raw;
 }
 
-int hdlcFrame(uint8_t *outbuf, size_t outbuf_len, ax25ctx_t *ctx, ax25frame_t *pkg) {
+int ax25_hdlc_frame(uint8_t *outbuf, size_t outbuf_len, ax25ctx_t *ctx, ax25frame_t *pkg) {
     int i, j;
     int idx = 0;
     uint8_t data = 0;
@@ -1149,6 +1149,6 @@ int hdlcFrame(uint8_t *outbuf, size_t outbuf_len, ax25ctx_t *ctx, ax25frame_t *p
     return idx;
 }
 
-bool Ax25NewRxFrames(void) {
+bool ax25_new_rx_frames(void) {
     return (rxFrameHead != rxFrameTail) || rxFrameBufferFull;
 }
