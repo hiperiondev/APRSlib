@@ -72,6 +72,20 @@ bool port_digitalRead(uint8_t pin) {
 void port_digitalWrite(uint8_t pin, pin_value_t mod) {
 }
 
+void port_queue_init(uint32_t size) {
+}
+
+void port_queue_flush(void) {
+}
+
+uint32_t port_queue_getCount(void) {
+    return 0;
+}
+
+bool port_queue_pop(int16_t *value) {
+    return true;
+}
+
 ///////////////////////////////////////////////////////////////////////
 
 void afskSetADCAtten(uint8_t val) {

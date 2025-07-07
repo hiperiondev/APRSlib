@@ -36,7 +36,6 @@
 #include "fx25.h"
 #include "modem.h"
 #include "APRSlib_port.h"
-#include "queue.h"
 
 static const char *TAG = "afsk";
 
@@ -210,7 +209,7 @@ void setPtt(bool state) {
         LED_Status(255, 0, 0);
     } else {
         setTransmit(false);
-        queue_flush();
+        port_queue_flush();
         if (_ptt_active) {
             port_pinMode(_ptt_pin, OUTPUT);
             port_digitalWrite(_ptt_pin, LOW);
@@ -320,7 +319,7 @@ void AFSK_hw_init(void) {
 void AFSK_init(int8_t adc_pin, int8_t dac_pin, int8_t ptt_pin, int8_t sql_pin, int8_t pwr_pin, int8_t led_tx_pin, int8_t led_rx_pin, int8_t led_strip_pin,
                bool ptt_act, bool sql_act, bool pwr_act) {
 
-    queue_init(sizeof(int16_t), 768 * 2, FIFO, true, NULL, 0); // Instantiate queue
+    port_queue_init(768 * 2); // Instantiate queue
 
     _adc_pin = adc_pin;
     _dac_pin = dac_pin;
@@ -389,11 +388,11 @@ void AFSK_Poll(bool SA818, bool RFPower) {
     } else {
         if (audio_buffer != NULL) {
             tcb_t *tp = &tcb;
-            while (queue_getCount() >= BLOCK_SIZE) {
+            while (port_queue_getCount() >= BLOCK_SIZE) {
                 mVsum = 0;
                 mVsumCount = 0;
                 for (x = 0; x < BLOCK_SIZE; x++) {
-                    if (!queue_pop(&adc)) // Pull queue buffer
+                    if (!port_queue_pop(&adc)) // Pull queue buffer
                         break;
 
                     tp->avg_sum += adc - tp->avg_buf[tp->avg_idx];
