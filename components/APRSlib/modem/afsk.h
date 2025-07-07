@@ -172,20 +172,12 @@ inline static uint8_t sinSample(uint16_t i) {
 
 void AFSK_init(int8_t adc_pin, int8_t dac_pin, int8_t ptt_pin, int8_t sql_pin, int8_t pwr_pin, int8_t led_tx_pin, int8_t led_rx_pin, int8_t led_strip_pin,
                bool ptt_act, bool sql_act, bool pwr_act);
-void AFSK_Poll(bool SA818, bool RFPower);
-void AFSK_TimerEnable(bool sts);
-void DAC_TimerEnable(bool sts);
-void afskSetHPF(bool val);
-void afskSetBPF(bool val);
-void afskSetADCAtten(uint8_t val);
-void afskSetPTT(int8_t val, bool act);
-void afskSetPWR(int8_t val, bool act);
-void afskSetSQL(int8_t val, bool act);
-bool getTransmit();
-void setTransmit(bool val);
-bool getReceive();
-void afskSetModem(uint8_t val, bool bpf, uint16_t timeSlot, uint16_t preamble, uint8_t fx25Mode);
-void setPtt(bool state);
-void LED_Status(uint8_t red, uint8_t green, uint8_t blue);
+void AFSK_Poll(void);
+void AFSK_SetPTT(int8_t val, bool act);
+bool AFSK_getTransmit(void);
+void AFSK_setTransmit(bool val);
+bool AFSK_getReceive(void);
+void AFSK_SetModem(uint8_t val, bool bpf, uint16_t timeSlot, uint16_t preamble, uint8_t fx25Mode);
+void AFSK_setPtt(bool state);
 
 #endif

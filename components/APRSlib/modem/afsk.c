@@ -112,9 +112,9 @@ uint8_t dcd_cnt = 0;
 
 // Filter coefficients (designed for 38400→9600 resampling)
 // cutoff = 4800  # Nyquist for 9600Hz
-const float resample_coeffs[FILTER_TAPS] = { 0.003560, 0.038084, 0.161032, 0.297324, 0.297324, 0.161032, 0.038084, 0.003560 };
+static const float resample_coeffs[FILTER_TAPS] = { 0.003560, 0.038084, 0.161032, 0.297324, 0.297324, 0.161032, 0.038084, 0.003560 };
 
-void resample_audio(float *input_buffer) {
+static void resample_audio(float *input_buffer) {
     // Apply anti-aliasing filter and decimate
     for (int i = 0; i < BLOCK_SIZE / RESAMPLE_RATIO; i++) {
         float sum = 0;
@@ -128,7 +128,7 @@ void resample_audio(float *input_buffer) {
     }
 }
 
-float update_agc(float *input_buffer, size_t len) {
+static float update_agc(float *input_buffer, size_t len) {
     // Calculate RMS of current block
     float sum_sq = 0;
     for (int i = 0; i < len; i++) {
@@ -144,24 +144,37 @@ float update_agc(float *input_buffer, size_t len) {
     return agc_gain;
 }
 
-uint8_t CountOnesFromInteger_8(uint8_t value) {
-    uint8_t count;
-    for (count = 0; value != 0; count++, value &= value - 1)
-        ;
-    return count;
-}
-
-uint16_t CountOnesFromInteger_16(uint16_t value) {
-    uint16_t count = 0;
-    for (int i = 0; i < 16; i++) {
-        if (value & 0x0001)
-            count++;
-        value >>= 1;
+static void hw_init(void) {
+    // Set up ADC
+    if (_sql_pin > -1) {
+        port_pinMode(_sql_pin, INPUT_PULLUP);
     }
-    return count;
+
+    if (_pwr_pin > -1) {
+        port_pinMode(_pwr_pin, OUTPUT);
+    }
+
+    if (_led_tx_pin > -1) {
+        port_pinMode(_led_tx_pin, OUTPUT);
+    }
+
+    if (_led_rx_pin > -1) {
+        port_pinMode(_led_rx_pin, OUTPUT);
+    }
+
+    if (_pwr_pin > -1) {
+        port_digitalWrite(_pwr_pin, !_pwr_active);
+    }
+
+    port_adc_continue_init();
+    port_sigmadelta_init();
+
+    AFSK_setTransmit(false);
 }
 
-bool getTransmit() {
+////////////////////////////////////////////////
+
+bool AFSK_getTransmit() {
     bool ret = false;
 
     if ((port_digitalRead(_ptt_pin) ^ _ptt_active) == 0) // signal active with ptt_active
@@ -174,11 +187,11 @@ bool getTransmit() {
     return ret;
 }
 
-void setTransmit(bool val) {
+void AFSK_setTransmit(bool val) {
     hw_afsk_dac_isr = val;
 }
 
-bool getReceive() {
+bool AFSK_getReceive(void) {
     bool ret = false;
 
     if ((port_digitalRead(_ptt_pin) ^ _ptt_active) == 0) // signal active with ptt_active
@@ -193,10 +206,10 @@ bool getReceive() {
  * @brief Controls PTT output
  * @param state False - PTT off, true - PTT on
  */
-void setPtt(bool state) {
+void AFSK_setPtt(bool state) {
 
     if (state) {
-        setTransmit(true);
+        AFSK_setTransmit(true);
         if (_ptt_pin > 34)
             _ptt_pin = 32;
         if (_ptt_active) {
@@ -206,9 +219,9 @@ void setPtt(bool state) {
             port_pinMode(_ptt_pin, OUTPUT_OPEN_DRAIN);
             port_digitalWrite(_ptt_pin, LOW);
         }
-        LED_Status(255, 0, 0);
+        port_led_status(255, 0, 0);
     } else {
-        setTransmit(false);
+        AFSK_setTransmit(false);
         port_queue_flush();
         if (_ptt_active) {
             port_pinMode(_ptt_pin, OUTPUT);
@@ -217,11 +230,11 @@ void setPtt(bool state) {
             port_pinMode(_ptt_pin, OUTPUT_OPEN_DRAIN);
             port_digitalWrite(_ptt_pin, HIGH);
         }
-        LED_Status(0, 0, 0);
+        port_led_status(0, 0, 0);
     }
 }
 
-void afskSetModem(uint8_t val, bool bpf, uint16_t timeSlot, uint16_t preamble, uint8_t fx25Mode) {
+void AFSK_SetModem(uint8_t val, bool bpf, uint16_t timeSlot, uint16_t preamble, uint8_t fx25Mode) {
     if (bpf)
         ModemConfig.flatAudioIn = 1;
     else
@@ -267,53 +280,9 @@ void afskSetModem(uint8_t val, bool bpf, uint16_t timeSlot, uint16_t preamble, u
     Ax25TxDelay(preamble);
 }
 
-void afskSetHPF(bool val) {
-}
-
-void afskSetBPF(bool val) {
-}
-
-void afskSetSQL(int8_t val, bool act) {
-    _sql_pin = val;
-    _sql_active = act;
-}
-
-void afskSetPTT(int8_t val, bool act) {
+void AFSK_SetPTT(int8_t val, bool act) {
     _ptt_pin = val;
     _ptt_active = act;
-}
-
-void afskSetPWR(int8_t val, bool act) {
-    _pwr_pin = val;
-    _pwr_active = act;
-}
-
-void AFSK_hw_init(void) {
-    // Set up ADC
-    if (_sql_pin > -1) {
-        port_pinMode(_sql_pin, INPUT_PULLUP);
-    }
-
-    if (_pwr_pin > -1) {
-        port_pinMode(_pwr_pin, OUTPUT);
-    }
-
-    if (_led_tx_pin > -1) {
-        port_pinMode(_led_tx_pin, OUTPUT);
-    }
-
-    if (_led_rx_pin > -1) {
-        port_pinMode(_led_rx_pin, OUTPUT);
-    }
-
-    if (_pwr_pin > -1) {
-        port_digitalWrite(_pwr_pin, !_pwr_active);
-    }
-
-    port_adc_continue_init();
-    port_sigmadelta_init();
-
-    setTransmit(false);
 }
 
 void AFSK_init(int8_t adc_pin, int8_t dac_pin, int8_t ptt_pin, int8_t sql_pin, int8_t pwr_pin, int8_t led_tx_pin, int8_t led_rx_pin, int8_t led_strip_pin,
@@ -362,24 +331,10 @@ void AFSK_init(int8_t adc_pin, int8_t dac_pin, int8_t ptt_pin, int8_t sql_pin, i
     tp->SlotTime = 10;      // 100ms
     tp->TXDELAY = 50;       // 500ms
     tp->persistence_P = 63; // P = 0.25
-    AFSK_hw_init();
+    hw_init();
 }
 
-void sample_dac_isr() {
-    if (hw_afsk_dac_isr) {
-        port_enter_critical_isr(&timerMux); // ISR start
-
-        sinwave = MODEM_BAUDRATE_TIMER_HANDLER();
-        // Sigma-delta duty of one channel, the value ranges from -128 to 127, recommended range is -90 ~ 90.The waveform is more like a random one in this
-        // range.
-        int8_t sine = (int8_t)(((sinwave - 127) * 12) >> 4); // Redue sine = -85 ~ 85
-        port_sigmadelta_set_duty(0, sine);
-
-        port_exit_critical_isr(&timerMux); // ISR end
-    }
-}
-
-void AFSK_Poll(bool SA818, bool RFPower) {
+void AFSK_Poll(void) {
     int mV;
     int x = 0;
     int16_t adc = 0;

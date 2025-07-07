@@ -86,6 +86,14 @@ bool port_queue_pop(int16_t *value) {
     return true;
 }
 
+void port_led_status(uint8_t red, uint8_t green, uint8_t blue) {
+}
+
+void port_TimerEnable(bool enable) {
+}
+
+void port_DAC_TimerEnable(bool enable) {
+}
 ///////////////////////////////////////////////////////////////////////
 
 void afskSetADCAtten(uint8_t val) {

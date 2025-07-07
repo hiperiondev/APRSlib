@@ -69,13 +69,19 @@ typedef enum pinValue_e {
 void port_delay(long msec);
 uint64_t port_millis(void);
 long port_random(uint32_t min, uint32_t max);
+
 void port_pinMode(uint8_t pin, pin_mode_t mode);
 bool port_digitalRead(uint8_t pin);
 void port_digitalWrite(uint8_t pin, pin_value_t mod);
+void port_led_status(uint8_t red, uint8_t green, uint8_t blue);
+
 void port_queue_init(uint32_t size);
 void port_queue_flush(void);
 uint32_t port_queue_getCount(void);
 bool port_queue_pop(int16_t *value);
+
+void port_TimerEnable(bool enable);
+void port_DAC_TimerEnable(bool enable);
 
 void port_adc_continue_init(void);
 uint8_t port_adc_cali_raw_to_voltage(int raw, int *voltage);

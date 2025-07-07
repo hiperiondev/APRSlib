@@ -319,9 +319,9 @@ modemprefilter_t ModemGetFilterType(uint8_t modem) {
  */
 static void setDcd(bool state) {
     if (state) {
-        LED_Status(0, 255, 0);
+        port_led_status(0, 255, 0);
     } else {
-        LED_Status(0, 0, 0);
+        port_led_status(0, 0, 0);
     }
 }
 
@@ -554,7 +554,7 @@ void ModemTxTestStart(modemtxtestmode_t type) {
     if (txTestState != TEST_DISABLED) // TX test is already running
         ModemTxTestStop();            // stop this test
 
-    setPtt(true); // PTT on
+    AFSK_setPtt(true); // PTT on
     txTestState = type;
 }
 
@@ -564,16 +564,16 @@ void ModemTxTestStop(void) {
     dacEn = -1;
     adcEn = 1;
 
-    setPtt(false); // PTT off
+    AFSK_setPtt(false); // PTT off
 }
 
 void ModemTransmitStart(void) {
     txTestState = TEST_DISABLED;
-    setPtt(true); // PTT on
+    AFSK_setPtt(true); // PTT on
     port_delay(50);
     hw_afsk_dac_isr = true;
-    AFSK_TimerEnable(false);
-    DAC_TimerEnable(true);
+    port_TimerEnable(false);
+    port_DAC_TimerEnable(true);
 
     log_i(TAG, "ModemTransmitStart");
 }
@@ -582,10 +582,10 @@ void ModemTransmitStart(void) {
  * @brief Stop TX and go back to RX
  */
 void ModemTransmitStop(void) {
-    setPtt(false);
+    AFSK_setPtt(false);
 
     hw_afsk_dac_isr = false;
-    DAC_TimerEnable(false);
+    port_TimerEnable(false);
     adcEn = 1;
 
     log_i(TAG, "ModemTransmitStop");
