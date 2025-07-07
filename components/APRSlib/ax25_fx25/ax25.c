@@ -33,7 +33,7 @@
 #include "CRC-CCIT.h"
 #include "ax25.h"
 #include "modem.h"
-#include "port.h"
+#include "APRSlib_port.h"
 #ifdef ENABLE_FX25
 #include "fx25.h"
 #endif

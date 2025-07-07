@@ -32,7 +32,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "port.h"
+#include "APRSlib_port.h"
 
 #define SIN_LEN                      512
 #define SWITCH_TONE(inc)             (((inc) == MARK_INC) ? SPACE_INC : MARK_INC)

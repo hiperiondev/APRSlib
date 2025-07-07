@@ -12,7 +12,7 @@
 #include <xtensa/config/core.h>
 #endif
 
-#include "esp32_port.h"
+#include "APRSlib_port.h"
 #include "fir_filter.h"
 
 static const char *TAG = "fir_filter";

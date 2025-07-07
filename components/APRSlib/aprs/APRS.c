@@ -30,7 +30,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "port.h"
+#include "APRSlib_port.h"
 #include "ax25.h"
 
 #define countof(a) sizeof(a) / sizeof(a[0])

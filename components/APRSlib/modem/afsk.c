@@ -35,7 +35,7 @@
 #include "ax25.h"
 #include "fx25.h"
 #include "modem.h"
-#include "port.h"
+#include "APRSlib_port.h"
 #include "queue.h"
 
 static const char *TAG = "afsk";

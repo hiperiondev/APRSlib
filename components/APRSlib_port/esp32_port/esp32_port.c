@@ -30,8 +30,6 @@
 
 #include <driver/gptimer.h>
 #include <driver/sdm.h>
-#include <driver/sigmadelta.h>
-#include <driver/timer.h>
 #include <dsps_fir.h>
 #include <esp_adc/adc_cali.h>
 #include <esp_adc/adc_cali_scheme.h>
