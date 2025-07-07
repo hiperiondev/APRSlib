@@ -16,18 +16,18 @@
 
 #define QUEUE_INITIALIZED 0x5AA5U //!< Initialized cppQueue control value
 
-static queue_t impl; //!< cppQueue implementation: FIFO LIFO
-static bool ovw;          //!< Overwrite previous records when queue is full allowed
-static bool dynamic;      //!< Set to true when queue is dynamically allocated
-static size_t queue_sz;   //!< Size of the full queue
-static size_t rec_sz;     //!< Size of a record
-uint16_t rec_nb;   //!< number of records in the queue
-static uint8_t *queue;    //!< cppQueue start pointer (when allocated)
+static queue_t impl;    //!< cppQueue implementation: FIFO LIFO
+static bool ovw;        //!< Overwrite previous records when queue is full allowed
+static bool dynamic;    //!< Set to true when queue is dynamically allocated
+static size_t queue_sz; //!< Size of the full queue
+static size_t rec_sz;   //!< Size of a record
+uint16_t rec_nb;        //!< number of records in the queue
+static uint8_t *queue;  //!< cppQueue start pointer (when allocated)
 
-static uint16_t in;   //!< number of records pushed into the queue
-static uint16_t out;  //!< number of records pulled from the queue (only for FIFO)
-uint16_t cnt;  //!< number of records not retrieved from the queue
-uint16_t init; //!< set to QUEUE_INITIALIZED after successful init of the queue, 0 otherwise
+static uint16_t in;  //!< number of records pushed into the queue
+static uint16_t out; //!< number of records pulled from the queue (only for FIFO)
+uint16_t cnt;        //!< number of records not retrieved from the queue
+uint16_t init;       //!< set to QUEUE_INITIALIZED after successful init of the queue, 0 otherwise
 
 static bool _isInitialized = false;
 static bool _isEmpty = false;
@@ -104,8 +104,8 @@ inline uint16_t __attribute__((always_inline)) cppQueue__getCount(void) {
 /************************/
 void queue_init(const size_t size_rec, const uint16_t nb_recs, const queue_t type, const bool overwrite, void *const pQDat, const size_t lenQDat) {
     init = 0;
-    rec_nb = 0;       // rec_nb needs to be 0 to ensure proper push behavior when queue is not allocated
-    ovw = 0;          // ovw needs to be 0 to ensure proper push behavior when queue is not allocated
+    rec_nb = 0;    // rec_nb needs to be 0 to ensure proper push behavior when queue is not allocated
+    ovw = 0;       // ovw needs to be 0 to ensure proper push behavior when queue is not allocated
     queue_flush(); // other variables needs to be 0 to ensure proper functions behavior when queue is not allocated
 
     const size_t size = nb_recs * size_rec;

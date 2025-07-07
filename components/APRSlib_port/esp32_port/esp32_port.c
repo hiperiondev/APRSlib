@@ -42,6 +42,8 @@
 #include <hal/misc.h>
 #include <soc/syscon_struct.h>
 
+#include "esp32_port.h"
+
 void port_delay(long msec) {
     vTaskDelay(msec / portTICK_PERIOD_MS);
 }
@@ -60,6 +62,16 @@ long port_random(uint32_t min, uint32_t max) {
     return res;
 }
 
+void port_pinMode(uint8_t pin, pin_mode_t mode) {
+}
+
+bool port_digitalRead(uint8_t pin) {
+    return true;
+}
+
+void port_digitalWrite(uint8_t pin, pin_value_t mod) {
+}
+
 ///////////////////////////////////////////////////////////////////////
 
 void afskSetADCAtten(uint8_t val) {
@@ -69,10 +81,6 @@ void AFSK_TimerEnable(bool sts) {
 }
 
 void DAC_TimerEnable(bool sts) {
-}
-
-bool s_conv_done_cb(adc_continuous_handle_t stAdcHandle, const adc_continuous_evt_data_t *edata, void *user_data) {
-    return true;
 }
 
 void port_adc_continue_init(void) {

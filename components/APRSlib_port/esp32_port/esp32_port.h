@@ -41,9 +41,6 @@
 
 #define port_TaskHandle_t      TaskHandle_t
 #define port_SemaphoreHandle_t SemaphoreHandle_t
-#define digitalRead(pin)       1
-#define pinMode(pin, mode)     // TODO: implement
-#define digitalWrite(pin, val) // TODO: implement
 #define log_i                  ESP_LOGI
 #define __disable_irq()        // TODO: implement
 #define __enable_irq()         // TODO: implement
@@ -54,9 +51,27 @@
             xSemaphoreGive((xI2CSemaphore));                                                                                                                   \
     }
 
+#define LED_RX_PIN 1
+
+typedef enum pinModes_e {
+    INPUT,
+    OUTPUT,
+    INPUT_PULLDOWN,
+    INPUT_PULLUP,
+    OUTPUT_OPEN_DRAIN,
+} pin_mode_t;
+
+typedef enum pinValue_e {
+    HIGH,
+    LOW,
+} pin_value_t;
+
 void port_delay(long msec);
 uint64_t port_millis(void);
 long port_random(uint32_t min, uint32_t max);
+void port_pinMode(uint8_t pin, pin_mode_t mode);
+bool port_digitalRead(uint8_t pin);
+void port_digitalWrite(uint8_t pin, pin_value_t mod);
 
 void port_adc_continue_init(void);
 uint8_t port_adc_cali_raw_to_voltage(int raw, int *voltage);

@@ -165,7 +165,7 @@ uint16_t CountOnesFromInteger_16(uint16_t value) {
 bool getTransmit() {
     bool ret = false;
 
-    if ((digitalRead(_ptt_pin) ^ _ptt_active) == 0) // signal active with ptt_active
+    if ((port_digitalRead(_ptt_pin) ^ _ptt_active) == 0) // signal active with ptt_active
         ret = true;
     else
         ret = false;
@@ -182,9 +182,9 @@ void setTransmit(bool val) {
 bool getReceive() {
     bool ret = false;
 
-    if ((digitalRead(_ptt_pin) ^ _ptt_active) == 0) // signal active with ptt_active
+    if ((port_digitalRead(_ptt_pin) ^ _ptt_active) == 0) // signal active with ptt_active
         return false;                               // PTT Protection receive
-    if (digitalRead(LED_RX_PIN))                    // Check RX LED receiving.
+    if (port_digitalRead(LED_RX_PIN))                    // Check RX LED receiving.
         ret = true;
 
     return ret;
@@ -201,22 +201,22 @@ void setPtt(bool state) {
         if (_ptt_pin > 34)
             _ptt_pin = 32;
         if (_ptt_active) {
-            pinMode(_ptt_pin, OUTPUT);
-            digitalWrite(_ptt_pin, HIGH);
+            port_pinMode(_ptt_pin, OUTPUT);
+            port_digitalWrite(_ptt_pin, HIGH);
         } else { // Open Collector to LOW
-            pinMode(_ptt_pin, OUTPUT_OPEN_DRAIN);
-            digitalWrite(_ptt_pin, LOW);
+            port_pinMode(_ptt_pin, OUTPUT_OPEN_DRAIN);
+            port_digitalWrite(_ptt_pin, LOW);
         }
         LED_Status(255, 0, 0);
     } else {
         setTransmit(false);
         queue_flush();
         if (_ptt_active) {
-            pinMode(_ptt_pin, OUTPUT);
-            digitalWrite(_ptt_pin, LOW);
+            port_pinMode(_ptt_pin, OUTPUT);
+            port_digitalWrite(_ptt_pin, LOW);
         } else { // Open Collector to HIGH
-            pinMode(_ptt_pin, OUTPUT_OPEN_DRAIN);
-            digitalWrite(_ptt_pin, HIGH);
+            port_pinMode(_ptt_pin, OUTPUT_OPEN_DRAIN);
+            port_digitalWrite(_ptt_pin, HIGH);
         }
         LED_Status(0, 0, 0);
     }
@@ -292,23 +292,23 @@ void afskSetPWR(int8_t val, bool act) {
 void AFSK_hw_init(void) {
     // Set up ADC
     if (_sql_pin > -1) {
-        pinMode(_sql_pin, INPUT_PULLUP);
+        port_pinMode(_sql_pin, INPUT_PULLUP);
     }
 
     if (_pwr_pin > -1) {
-        pinMode(_pwr_pin, OUTPUT);
+        port_pinMode(_pwr_pin, OUTPUT);
     }
 
     if (_led_tx_pin > -1) {
-        pinMode(_led_tx_pin, OUTPUT);
+        port_pinMode(_led_tx_pin, OUTPUT);
     }
 
     if (_led_rx_pin > -1) {
-        pinMode(_led_rx_pin, OUTPUT);
+        port_pinMode(_led_rx_pin, OUTPUT);
     }
 
     if (_pwr_pin > -1) {
-        digitalWrite(_pwr_pin, !_pwr_active);
+        port_digitalWrite(_pwr_pin, !_pwr_active);
     }
 
     port_adc_continue_init();
