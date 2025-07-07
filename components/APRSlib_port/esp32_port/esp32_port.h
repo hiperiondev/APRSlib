@@ -37,7 +37,7 @@
 #include <freertos/task.h>
 
 #define port_enter_critical_isr(mux) portENTER_CRITICAL_ISR(mux)
-#define port_exit_critical_isr(mux) portEXIT_CRITICAL_ISR(mux)
+#define port_exit_critical_isr(mux)  portEXIT_CRITICAL_ISR(mux)
 
 #define port_TaskHandle_t      TaskHandle_t
 #define port_SemaphoreHandle_t SemaphoreHandle_t

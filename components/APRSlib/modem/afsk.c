@@ -65,7 +65,7 @@ static const char *TAG = "afsk";
 
 #define DEFAULT_SEMAPHORE_TIMEOUT 10
 
-typedef struct {
+typedef struct interrupt_config_s {
     void *fn;
     void *arg;
 } interrupt_config_t;

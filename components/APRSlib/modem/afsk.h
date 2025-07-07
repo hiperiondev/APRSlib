@@ -81,7 +81,7 @@
 typedef struct FX25TAG fx25tag_t;
 #endif
 
-typedef struct TCB { // TNC Control Block
+typedef struct TCB_s { // TNC Control Block
     port_TaskHandle_t task;
 
     uint8_t port; // port NO. 0 - 5

@@ -51,13 +51,13 @@ enum ModemTxTestMode {
     TEST_ALTERNATING,
 };
 
-struct ModemDemodConfig {
+typedef struct ModemDemodConfig_s {
     enum ModemType modem;
     uint8_t usePWM : 1;      // 0 - use R2R, 1 - use PWM
     uint8_t flatAudioIn : 1; // 0 - normal (deemphasized) audio input, 1 - flat audio (unfiltered) input
-};
+} modem_demod_config_t;
 
-extern struct ModemDemodConfig ModemConfig;
+extern modem_demod_config_t ModemConfig;
 
 enum ModemPrefilter {
     PREFILTER_NONE = 0,

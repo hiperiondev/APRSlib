@@ -142,7 +142,6 @@ static uint8_t txFx25Buffer[FX25_MAX_BLOCK_SIZE];
 static uint8_t txTagByteIdx = 0;
 #endif
 static uint8_t frameReceived; // a bitmap of receivers that received the frame
-ax25_callback_t _hook;
 static uint8_t txByte = 0;           // current TX byte
 static uint16_t txByteIdx = 0;       // current TX byte index
 static int8_t txBitIdx = 0;          // current bit index in txByte
@@ -162,6 +161,8 @@ static uint16_t rxMultiplexDelay = 0; // simple delay for decoder multiplexer to
 static uint16_t txDelay;              // number of TXDelay bytes to send
 static uint16_t txTail;               // number of TXTail bytes to send
 static uint8_t outputFrameBuffer[AX25_FRAME_MAX_SIZE];
+
+ax25_callback_t _hook;
 
 /**
  * @brief Recalculate CRC for one bit

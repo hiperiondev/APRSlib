@@ -107,22 +107,22 @@ static const char *TAG = "modem";
 #define BPF_MAX_TAPS    15
 #define FILTER_MAX_TAPS ((LPF_MAX_TAPS > BPF_MAX_TAPS) ? LPF_MAX_TAPS : BPF_MAX_TAPS)
 
-struct Filter {
+typedef struct Filter_s {
     int16_t *coeffs;
     uint8_t taps;
     int32_t samples[FILTER_MAX_TAPS];
     uint8_t gainShift;
-};
+} filter_t;
 
-struct DemodState {
+typedef struct DemodState_s {
     uint8_t rawSymbols;  // raw, unsynchronized symbols
     uint8_t syncSymbols; // synchronized symbols
 
     enum ModemPrefilter prefilter;
-    struct Filter bpf;
+    filter_t bpf;
     int16_t correlatorSamples[NMAX];
     uint8_t correlatorSamplesIdx;
-    struct Filter lpf;
+    filter_t lpf;
 
     uint8_t dcd : 1; // DCD state
 
@@ -142,21 +142,17 @@ struct DemodState {
 
     int16_t peak;
     int16_t valley;
-};
+} demod_state_t;
 
 extern int8_t adcEn;
 extern int8_t dacEn;
 extern bool hw_afsk_dac_isr;
 
-struct ModemDemodConfig ModemConfig;
 static uint8_t N;                                                              // samples per symbol
 static enum ModemTxTestMode txTestState;                                       // current TX test mode
 static uint8_t demodCount;                                                     // actual number of parallel demodulators
 static uint8_t currentSymbol;                                                  // current symbol for NRZI encoding
 static uint8_t scrambledSymbol;                                                // current symbol after scrambling
-float markFreq;                                                                // mark frequency
-float spaceFreq;                                                               // space frequency
-float baudRate;                                                                // baudrate
 static uint16_t markStep;                                                      // mark timer step
 static uint16_t spaceStep;                                                     // space timer step
 static uint16_t baudRateStep;                                                  // baudrate timer step
@@ -165,7 +161,12 @@ static uint8_t dcd = 0;                                                        /
 static uint32_t lfsr = 0xFFFFF;                                                // LFSR for 9600 Bd
 static uint16_t phaseAcc = 0;
 static uint16_t sampleIndex = 0;
-static struct DemodState demodState[MODEM_MAX_DEMODULATOR_COUNT];
+static demod_state_t demodState[MODEM_MAX_DEMODULATOR_COUNT];
+
+modem_demod_config_t ModemConfig;
+float markFreq;                                                                // mark frequency
+float spaceFreq;                                                               // space frequency
+float baudRate;                                                                // baudrate
 
 /**
  * @brief BPF filter with 2200 Hz tone 6 dB preemphasis (it actually attenuates 1200 Hz tone by 6 dB)
@@ -267,9 +268,9 @@ static const int16_t lpf9600[9] = {
 };
 
 static void decode(uint8_t symbol, uint8_t demod, uint16_t mV);
-static int32_t demodulate(int16_t sample, struct DemodState *dem);
+static int32_t demodulate(int16_t sample, demod_state_t *dem);
 
-static int32_t filter(struct Filter *filter, int32_t input) {
+static int32_t filter(filter_t *filter, int32_t input) {
     int32_t out = 0;
 
     for (uint8_t i = filter->taps - 1; i > 0; i--)
@@ -350,7 +351,7 @@ void MODEM_DECODE(int16_t sample, uint16_t mVrms) {
     bool partialDcd = false;
 
     for (uint8_t i = 0; i < demodCount; i++) {
-        uint8_t symbol = (demodulate(sample, (struct DemodState *)&demodState[i]) > 0); // demodulate sample
+        uint8_t symbol = (demodulate(sample, (demod_state_t *)&demodState[i]) > 0); // demodulate sample
 
         decode(symbol, i, mVrms); // recover bits, decode NRZI and call higher level function
         if (demodState[i].dcd)
@@ -404,7 +405,7 @@ uint8_t MODEM_BAUDRATE_TIMER_HANDLER(void) {
  * @param[in] *dem Demodulator state
  * @return Current tone (0 or 1)
  */
-static int32_t demodulate(int16_t sample, struct DemodState *dem) {
+static int32_t demodulate(int16_t sample, demod_state_t *dem) {
     // input signal amplitude tracking
     if (sample >= dem->peak) {
         dem->peak += (((int32_t)(AMP_TRACKING_ATTACK * (float)32768) * (int32_t)(sample - dem->peak)) >> 15);
@@ -498,7 +499,7 @@ static int32_t demodulate(int16_t sample, struct DemodState *dem) {
  * @param demod Demodulator index
  */
 static void decode(uint8_t symbol, uint8_t demod, uint16_t mV) {
-    struct DemodState *dem = (struct DemodState *)&demodState[demod];
+    demod_state_t *dem = (demod_state_t *)&demodState[demod];
 
     // This function provides bit/clock recovery and NRZI decoding
     // Bit recovery is based on PLL which is described in the function above (DCD PLL)
