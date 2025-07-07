@@ -11,6 +11,7 @@ file(
 idf_component_register(
     SRCS ${SOURCES}
     INCLUDE_DIRS
+        .
         ax25_fx25/lwfec/
         ax25_fx25/
         modem/
