@@ -30,10 +30,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "APRSlib_port.h"
 #include "CRC-CCIT.h"
 #include "ax25.h"
 #include "modem.h"
-#include "APRSlib_port.h"
 #ifdef ENABLE_FX25
 #include "fx25.h"
 #endif
@@ -94,7 +94,7 @@ enum TxInitStage {       //
     TX_INIT_TRANSMITTING //
 };
 
-struct FrameHandle {
+typedef struct FrameHandle_s {
     uint16_t start;
     uint16_t size;
     int8_t peak;
@@ -105,9 +105,9 @@ struct FrameHandle {
 #ifdef ENABLE_FX25
     struct Fx25Mode *fx25Mode;
 #endif
-};
+} frame_handle_t;
 
-struct RxState {
+typedef struct RxState_s {
     uint16_t crc;                       // current CRC
     uint8_t frame[AX25_FRAME_MAX_SIZE]; // raw frame buffer
     uint16_t frameIdx;                  // index for raw frame buffer
@@ -120,20 +120,20 @@ struct RxState {
     struct Fx25Mode *fx25Mode;
     uint64_t tag; // received correlation tag
 #endif
-};
+} rxstate_t;
 
-extern AX25Ctx AX25;
+extern ax25ctx_t AX25;
 
 static uint8_t rxBuffer[FRAME_BUFFER_SIZE]; // circular buffer for received frames
 static uint16_t rxBufferHead = 0;           // circular RX buffer write index
-static struct FrameHandle rxFrame[FRAME_MAX_COUNT];
+static frame_handle_t rxFrame[FRAME_MAX_COUNT];
 static uint8_t rxFrameHead = 0;
 static uint8_t rxFrameTail = 0;
 static bool rxFrameBufferFull = false;
 static uint8_t txBuffer[FRAME_BUFFER_SIZE]; // circular TX frame buffer
 static uint16_t txBufferHead = 0;           // circular TX buffer write index
 static uint16_t txBufferTail = 0;
-static struct FrameHandle txFrame[FRAME_MAX_COUNT];
+static frame_handle_t txFrame[FRAME_MAX_COUNT];
 static uint8_t txFrameHead = 0;
 static uint8_t txFrameTail = 0;
 static bool txFrameBufferFull = false;
@@ -156,7 +156,7 @@ static unsigned long txQuiet = 0;    // quit time + current tick value
 static uint8_t txRetries = 0;        // number of TX retries
 static enum TxInitStage txInitStage; // current TX initialization stage
 static enum TxStage txStage;         // current TX stage
-static struct RxState rxState[MODEM_MAX_DEMODULATOR_COUNT];
+static rxstate_t rxState[MODEM_MAX_DEMODULATOR_COUNT];
 static uint16_t lastCrc = 0;          // CRC of the last received frame. If not 0, a frame was successfully received
 static uint16_t rxMultiplexDelay = 0; // simple delay for decoder multiplexer to avoid receiving the same frame twice
 static uint16_t txDelay;              // number of TXDelay bytes to send
@@ -235,7 +235,7 @@ void ax25_decode(uint8_t *buf,size_t len,uint16_t mVrms)
     }
 }
 */
-void ax25_decode(uint8_t *buf, size_t len, uint16_t mVrms, AX25Msg *msg) {
+void ax25_decode(uint8_t *buf, size_t len, uint16_t mVrms, ax25msg_t *msg) {
     uint8_t *buf_start = buf;
 
     DECODE_CALL(buf, msg->dst.call);
@@ -560,7 +560,7 @@ void Ax25BitParse(uint8_t bit, uint8_t modem, uint16_t mV) {
         }
     }
 
-    struct RxState *rx = (struct RxState *)&(rxState[modem]);
+    rxstate_t *rx = (rxstate_t *)&(rxState[modem]);
 
     rx->rawData <<= 1; // store incoming bit
     rx->rawData |= (bit > 0);
@@ -993,7 +993,7 @@ unsigned int strpos(char *txt, char chk) {
     return idx;
 }
 
-void convPath(ax25header *hdr, char *txt, unsigned int size) {
+void convPath(ax25header_t *hdr, char *txt, unsigned int size) {
     unsigned int i, p, j;
     char num[5];
     hdr->ssid = 0;
@@ -1036,13 +1036,13 @@ void convPath(ax25header *hdr, char *txt, unsigned int size) {
     hdr->ssid |= 0x60;
 }
 
-char ax25_encode(ax25frame *frame, char *txt, int size) {
+char ax25_encode(ax25frame_t *frame, char *txt, int size) {
     char *token, *ptr;
     int i;
     unsigned int p, p2, p3;
     char j;
     ptr = (char *)frame;
-    memset(ptr, 0, sizeof(ax25frame)); // Clear frame
+    memset(ptr, 0, sizeof(ax25frame_t)); // Clear frame
     p = strpos(txt, ':');
     if (p > 0 && p < size) {
         // printf("p{:}=%d\r\n",p);
@@ -1095,7 +1095,7 @@ char ax25_encode(ax25frame *frame, char *txt, int size) {
     return 0;
 }
 
-uint8_t *ax25_putRaw(uint8_t *raw, AX25Ctx *ctx, uint8_t c) {
+uint8_t *ax25_putRaw(uint8_t *raw, ax25ctx_t *ctx, uint8_t c) {
     if (c == HDLC_FLAG || c == HDLC_RESET || c == AX25_ESC) {
         *raw++ = AX25_ESC;
     }
@@ -1104,7 +1104,7 @@ uint8_t *ax25_putRaw(uint8_t *raw, AX25Ctx *ctx, uint8_t c) {
     return raw;
 }
 
-int hdlcFrame(uint8_t *outbuf, size_t outbuf_len, AX25Ctx *ctx, ax25frame *pkg) {
+int hdlcFrame(uint8_t *outbuf, size_t outbuf_len, ax25ctx_t *ctx, ax25frame_t *pkg) {
     int i, j;
     int idx = 0;
     uint8_t data = 0;

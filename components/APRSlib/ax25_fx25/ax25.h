@@ -37,6 +37,13 @@
 
 // for AX.25 329 bytes is the theoretical max size assuming 2-byte Control, 1-byte PID, 256-byte info field and 8 digi address fields
 #define AX25_FRAME_MAX_SIZE (329) // single frame max length
+#define AX25_CTRL_UI        0x03
+#define AX25_PID_NOLAYER3   0xF0
+#define AX25_CALL(str, id)                                                                                                                                     \
+    { .call = (str), .ssid = (id) }
+#define AX25_MAX_RPT          8
+#define AX25_REPEATED(msg, n) ((msg)->rpt_flags & BV(n))
+#define CALL_OVERSPACE        1
 
 enum Ax25RxStage {
     RX_STAGE_IDLE = 0,
@@ -47,33 +54,27 @@ enum Ax25RxStage {
 #endif
 };
 
-struct Ax25ProtoConfig {
+typedef struct Ax25ProtoConfig_s {
     uint16_t txDelayLength;   // TXDelay length in ms
     uint16_t txTailLength;    // TXTail length in ms
     uint16_t quietTime;       // Quiet time in ms
     uint8_t allowNonAprs : 1; // allow non-APRS packets
     bool fx25 : 1;            // enable FX.25 (AX.25 + FEC)
     bool fx25Tx : 1;          // enable TX in FX.25
-};
-
-#define AX25_CTRL_UI      0x03
-#define AX25_PID_NOLAYER3 0xF0
+} ax25_protoconfig_t;
 
 struct AX25Ctx; // Forward declarations
 struct AX25Msg;
 
-extern bool ax25_stateTx;
-extern int transmissionState;
-
 typedef void (*ax25_callback_t)(struct AX25Msg *msg);
-typedef struct Hdlc {
+typedef struct Hdlc_s {
     uint8_t demodulatedBits;
     uint8_t bitIndex;
     uint8_t currentByte;
     bool receiving;
-} Hdlc;
+} hdlc_t;
 
-typedef struct AX25Ctx {
+typedef struct AX25Ctx_s {
     uint8_t buf[AX25_FRAME_MAX_SIZE];
     size_t frame_len;
     uint16_t crc_in;
@@ -81,32 +82,27 @@ typedef struct AX25Ctx {
     ax25_callback_t hook;
     bool sync;
     bool escape;
-} AX25Ctx;
-typedef struct ax25header_struct {
+} ax25ctx_t;
+
+typedef struct ax25header_s {
     char addr[7];
     char ssid;
-} ax25header;
+} ax25header_t;
 
-typedef struct ax25frame_struct {
-    ax25header header[10];
+typedef struct ax25frame_s {
+    ax25header_t header[10];
     char data[AX25_FRAME_MAX_SIZE];
-} ax25frame;
+} ax25frame_t;
 
-#define AX25_CALL(str, id)                                                                                                                                     \
-    { .call = (str), .ssid = (id) }
-#define AX25_MAX_RPT          8
-#define AX25_REPEATED(msg, n) ((msg)->rpt_flags & BV(n))
-#define CALL_OVERSPACE        1
-
-typedef struct AX25Call {
+typedef struct AX25Call_s {
     char call[6 + CALL_OVERSPACE];
     uint8_t ssid;
-} AX25Call;
+} ax25call_t;
 
-typedef struct AX25Msg {
-    AX25Call src;
-    AX25Call dst;
-    AX25Call rpt_list[AX25_MAX_RPT];
+typedef struct AX25Msg_s {
+    ax25call_t src;
+    ax25call_t dst;
+    ax25call_t rpt_list[AX25_MAX_RPT];
     uint8_t rpt_count;
     uint8_t rpt_flags;
     uint16_t ctrl;
@@ -114,9 +110,11 @@ typedef struct AX25Msg {
     uint8_t info[AX25_FRAME_MAX_SIZE];
     size_t len;
     uint16_t mVrms;
-} AX25Msg;
+} ax25msg_t;
 
-extern struct Ax25ProtoConfig Ax25Config;
+extern ax25_protoconfig_t Ax25Config;
+extern bool ax25_stateTx;
+extern int transmissionState;
 
 /**
  * @brief Write frame to transmit buffer
@@ -190,11 +188,11 @@ void Ax25TransmitCheck(void);
  */
 void Ax25Init(uint8_t fx25Mode);
 
-void ax25_decode(uint8_t *buf, size_t len, uint16_t mVrms, AX25Msg *msg);
+void ax25_decode(uint8_t *buf, size_t len, uint16_t mVrms, ax25msg_t *msg);
 
-char ax25_encode(ax25frame *frame, char *txt, int size);
+char ax25_encode(ax25frame_t *frame, char *txt, int size);
 // void ax25sendFrame(AX25Ctx *ctx,ax25frame *pkg);
-int hdlcFrame(uint8_t *outbuf, size_t outbuf_len, AX25Ctx *ctx, ax25frame *pkg);
+int hdlcFrame(uint8_t *outbuf, size_t outbuf_len, ax25ctx_t *ctx, ax25frame_t *pkg);
 void Ax25TxDelay(uint16_t delay_ms);
 void Ax25TimeSlot(uint16_t ts);
 bool Ax25NewRxFrames(void);

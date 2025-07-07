@@ -37,7 +37,7 @@
 #define FX25_PREGENERATE_POLYS
 #define FX25_MAX_DISTANCE 10 // maximum Hamming distance when comparing tags
 
-const struct Fx25Mode Fx25ModeList[11] = {
+const fx25mode_t Fx25ModeList[11] = {
     //
     { .tag = 0xB74DB7DF8A532F3E, .K = 239, .T = 16 }, //
     { .tag = 0x26FF60A600CC8FDE, .K = 128, .T = 16 }, //
@@ -52,7 +52,7 @@ const struct Fx25Mode Fx25ModeList[11] = {
     { .tag = 0x4A4ABEC4A724B796, .K = 64, .T = 64 }   //
 };
 
-const struct Fx25Mode *Fx25GetModeForTag(uint64_t tag) {
+const fx25mode_t *Fx25GetModeForTag(uint64_t tag) {
     for (uint8_t i = 0; i < sizeof(Fx25ModeList) / sizeof(*Fx25ModeList); i++) {
         if (__builtin_popcountll(tag ^ Fx25ModeList[i].tag) <= FX25_MAX_DISTANCE)
             return &Fx25ModeList[i];
@@ -60,7 +60,7 @@ const struct Fx25Mode *Fx25GetModeForTag(uint64_t tag) {
     return NULL;
 }
 
-const struct Fx25Mode *Fx25GetModeForSize(uint16_t size) {
+const fx25mode_t *Fx25GetModeForSize(uint16_t size) {
     // use "UZ7HO Soundmodem standard" for choosing FX.25 mode
     if (size <= 32)
         return &Fx25ModeList[3];
@@ -84,7 +84,7 @@ static struct LwFecRS rs16, rs32, rs64;
 static struct LwFecRS rs;
 #endif
 
-void Fx25Encode(uint8_t *buffer, const struct Fx25Mode *mode) {
+void Fx25Encode(uint8_t *buffer, const fx25mode_t *mode) {
 #ifdef FX25_PREGENERATE_POLYS
     struct LwFecRS *rs = NULL;
     switch (mode->T) {
@@ -108,7 +108,7 @@ void Fx25Encode(uint8_t *buffer, const struct Fx25Mode *mode) {
 #endif
 }
 
-bool Fx25Decode(uint8_t *buffer, const struct Fx25Mode *mode, uint8_t *fixed) {
+bool Fx25Decode(uint8_t *buffer, const fx25mode_t *mode, uint8_t *fixed) {
 #ifdef FX25_PREGENERATE_POLYS
     struct LwFecRS *rs = NULL;
     switch (mode->T) {

@@ -33,12 +33,12 @@
 #include "KISS.h"
 #include "ax25.h"
 
-extern struct Ax25ProtoConfig Ax25Config;
+extern ax25_protoconfig_t Ax25Config;
 size_t ctxbufflen;
 size_t frame_len = 0;
 uint8_t *ctxbuffer;
 static uint8_t serialBuffer[AX25_MAX_FRAME_LEN]; // Buffer for holding incoming serial data
-AX25Ctx testkiss;
+ax25ctx_t testkiss;
 bool IN_FRAME;
 bool ESCAPE;
 uint8_t command = CMD_UNKNOWN;

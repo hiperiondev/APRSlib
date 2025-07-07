@@ -41,11 +41,11 @@ extern void aprs_msg_callback(struct AX25Msg *msg);
 
 unsigned long custom_preamble = 350UL;
 unsigned long custom_tail = 50UL;
-AX25Ctx AX25;
-AX25Call src;
-AX25Call dst;
-AX25Call path1;
-AX25Call path2;
+ax25ctx_t AX25;
+ax25call_t src;
+ax25call_t dst;
+ax25call_t path1;
+ax25call_t path2;
 char CALL[7] = "NOCALL";
 int CALL_SSID = 0;
 char DST[7] = "APE32I";
@@ -54,7 +54,7 @@ char PATH1[7] = "WIDE1";
 int PATH1_SSID = 1;
 char PATH2[7] = "WIDE2";
 int PATH2_SSID = 2;
-AX25Call path[8];
+ax25call_t path[8];
 char latitude[9];
 char longtitude[10];
 char symbolTable = '/';
@@ -297,7 +297,7 @@ void APRS_sendPkt(void *_buffer, size_t length) {
 void APRS_sendTNC2Pkt(const uint8_t *raw, size_t length) {
     uint8_t data[300];
     int size = 0;
-    ax25frame frame;
+    ax25frame_t frame;
     ax25_encode(&frame, (char *)raw, length);
     size = hdlcFrame(data, 300, &AX25, &frame);
     log_i(TAG, "TX HDLC Fram size=%d", size);

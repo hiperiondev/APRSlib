@@ -75,7 +75,7 @@ extern float spaceFreq; // space frequency
 extern float baudRate;  // baudrate
 extern unsigned long custom_preamble;
 extern unsigned long custom_tail;
-extern AX25Ctx AX25;
+extern ax25ctx_t AX25;
 extern int mVrms;
 extern float dBV;
 
