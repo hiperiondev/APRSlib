@@ -26,10 +26,14 @@
  *
  */
 
-#ifndef PORT_H_
-#define PORT_H_
+#ifndef APRSLIB_H_
+#define APRSLIB_H_
 
-#include "APRSlib_port_version.h"
-#include "esp32_port.h"
+#include "APRSlib_version.h"
 
-#endif /* PORT_H_ */
+#include "APRS.h"
+#include "ax25.h"
+#include "KISS.h"
+#include "modem.h"
+
+#endif /* APRSLIB_H_ */

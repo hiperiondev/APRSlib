@@ -26,10 +26,25 @@
  *
  */
 
-#ifndef PORT_H_
-#define PORT_H_
+#ifndef APRSLIB_PORT_VERSION_H_
+#define APRSLIB_PORT_VERSION_H_
 
-#include "APRSlib_port_version.h"
-#include "esp32_port.h"
+/**
+ * @def APRSLIB_VERSION_MAYOR
+ * @brief Indicate a really big change that can cause a incompatibilities with previous versions.
+ */
+#define APRSLIB_PORT_VERSION_MAYOR 0
 
-#endif /* PORT_H_ */
+/**
+ * @def APRSLIB_PORT_VERSION_MINOR
+ * @brief Indicate some change on API or opcode or very important correction in functionality
+ */
+#define APRSLIB_PORT_VERSION_MINOR 0
+
+/**
+ * @def APRSLIB_PORT_VERSION_PATCH
+ * @brief Indicate some minor change or correction
+ */
+#define APRSLIB_PORT_VERSION_PATCH 0
+
+#endif /* APRSLIB_PORT_VERSION_H_ */
