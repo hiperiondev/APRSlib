@@ -40,7 +40,7 @@ static uint8_t commonBuffer[4 * RS_MAX_REDUNDANCY_BYTES + 4];
  * @param size Block size = N
  * @param out Output syndromes (length = T)
  */
-static void syndromes(struct LwFecRS *rs, uint8_t *data, uint8_t size, uint8_t *out) {
+static void syndromes(lwfecrs_t *rs, uint8_t *data, uint8_t size, uint8_t *out) {
     for (uint8_t i = 0; i < rs->T; i++) {
         out[i] = GfPolyEval(data, size, GfPow2(i + rs->fcr));
     }
@@ -97,7 +97,7 @@ static bool errorEvaluator(uint8_t *locator, uint8_t locatorSize, uint8_t *out) 
  * @param outSize Error locator polynomial buffer length <= T
  * @return True if success, else the "out" buffer must be invalidated and the block is uncorrectable
  */
-static bool errorLocator(struct LwFecRS *rs, uint8_t *syndromes, uint8_t *out, uint8_t *outSize) {
+static bool errorLocator(lwfecrs_t *rs, uint8_t *syndromes, uint8_t *out, uint8_t *outSize) {
     /*
      * The error locator polynomial is calculated using Berlekamp-Massey algorithm.
      * Two implementations are written here:
@@ -264,7 +264,7 @@ static bool errorLocator(struct LwFecRS *rs, uint8_t *syndromes, uint8_t *out, u
  * @param errCount Number of errors (error evaulator size)
  * @return True on success, false on failure
  */
-static bool fix(struct LwFecRS *rs, uint8_t *data, uint8_t size, uint8_t *syn, uint8_t *evaluator, uint8_t errCount) {
+static bool fix(lwfecrs_t *rs, uint8_t *data, uint8_t size, uint8_t *syn, uint8_t *evaluator, uint8_t errCount) {
     /*
      * This is based on Forney's algorithm.
      */
@@ -354,7 +354,7 @@ static bool checkSyndromes(uint8_t *syndromes, uint8_t size) {
     return !err;
 }
 
-bool RsDecode(struct LwFecRS *rs, uint8_t *data, uint8_t size, uint8_t *fixed) {
+bool RsDecode(lwfecrs_t *rs, uint8_t *data, uint8_t size, uint8_t *fixed) {
     if ((size > (RS_BLOCK_SIZE - rs->T)) || (rs->T > RS_MAX_REDUNDANCY_BYTES))
         return false;
 
@@ -395,7 +395,7 @@ bool RsDecode(struct LwFecRS *rs, uint8_t *data, uint8_t size, uint8_t *fixed) {
         return false;
 }
 
-void RsEncode(struct LwFecRS *rs, uint8_t *data, uint8_t size) {
+void RsEncode(lwfecrs_t *rs, uint8_t *data, uint8_t size) {
     if ((size > (RS_BLOCK_SIZE - rs->T)) || (rs->T > RS_MAX_REDUNDANCY_BYTES))
         return;
 
@@ -405,7 +405,7 @@ void RsEncode(struct LwFecRS *rs, uint8_t *data, uint8_t size) {
     memcpy(&data[size], GfPolyDiv(data, RS_BLOCK_SIZE, rs->generator, rs->T + 1, t), rs->T);
 }
 
-void RsInit(struct LwFecRS *rs, uint8_t T, uint8_t fcr) {
+void RsInit(lwfecrs_t *rs, uint8_t T, uint8_t fcr) {
     if (T > RS_MAX_REDUNDANCY_BYTES)
         return;
 

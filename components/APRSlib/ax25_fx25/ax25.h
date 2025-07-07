@@ -45,14 +45,14 @@
 #define AX25_REPEATED(msg, n) ((msg)->rpt_flags & BV(n))
 #define CALL_OVERSPACE        1
 
-enum Ax25RxStage {
+typedef enum Ax25RxStage_e {
     RX_STAGE_IDLE = 0,
     RX_STAGE_FLAG,
     RX_STAGE_FRAME,
 #ifdef ENABLE_FX25
     RX_STAGE_FX25_FRAME,
 #endif
-};
+} ax25_rxstage_t;
 
 typedef struct Ax25ProtoConfig_s {
     uint16_t txDelayLength;   // TXDelay length in ms
@@ -154,7 +154,7 @@ bool Ax25ReadNextRxFrame(uint8_t **dst, uint16_t *size, int8_t *peak, int8_t *va
  * @return RX_STATE_IDLE, RX_STATE_FLAG or RX_STATE_FRAME
  * @warning Only for internal use
  */
-enum Ax25RxStage Ax25GetRxStage(uint8_t modemNo);
+ax25_rxstage_t Ax25GetRxStage(uint8_t modemNo);
 
 /**
  * @brief Parse incoming bit (not symbol!)

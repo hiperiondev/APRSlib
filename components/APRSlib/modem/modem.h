@@ -44,12 +44,12 @@ enum ModemType {
     MODEM_9600,
 };
 
-enum ModemTxTestMode {
+typedef enum ModemTxTestMode_e {
     TEST_DISABLED,
     TEST_MARK,
     TEST_SPACE,
     TEST_ALTERNATING,
-};
+} modemtxtestmode_t;
 
 typedef struct ModemDemodConfig_s {
     enum ModemType modem;
@@ -59,12 +59,12 @@ typedef struct ModemDemodConfig_s {
 
 extern modem_demod_config_t ModemConfig;
 
-enum ModemPrefilter {
+typedef enum ModemPrefilter_e {
     PREFILTER_NONE = 0,
     PREFILTER_PREEMPHASIS,
     PREFILTER_DEEMPHASIS,
     PREFILTER_FLAT,
-};
+} modemprefilter_t;
 
 /**
  * @brief Get measured signal level
@@ -92,7 +92,7 @@ uint8_t ModemGetDemodulatorCount(void);
  * @param modem Modem number
  * @return Filter type
  */
-enum ModemPrefilter ModemGetFilterType(uint8_t modem);
+modemprefilter_t ModemGetFilterType(uint8_t modem);
 
 /**
  * @brief Get current DCD state
@@ -123,7 +123,7 @@ uint16_t ModemGetRMS(uint8_t number);
  * @brief Start or restart TX test mode
  * @param type TX test type: TEST_MARK, TEST_SPACE or TEST_ALTERNATING
  */
-void ModemTxTestStart(enum ModemTxTestMode type);
+void ModemTxTestStart(modemtxtestmode_t type);
 
 /**
  * @brief Stop TX test mode

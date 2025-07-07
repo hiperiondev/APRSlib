@@ -32,10 +32,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "APRSlib_port.h"
 #include "afsk.h"
 #include "ax25.h"
 #include "modem.h"
-#include "APRSlib_port.h"
 
 static const char *TAG = "modem";
 
@@ -118,7 +118,7 @@ typedef struct DemodState_s {
     uint8_t rawSymbols;  // raw, unsynchronized symbols
     uint8_t syncSymbols; // synchronized symbols
 
-    enum ModemPrefilter prefilter;
+    modemprefilter_t prefilter;
     filter_t bpf;
     int16_t correlatorSamples[NMAX];
     uint8_t correlatorSamplesIdx;
@@ -149,7 +149,7 @@ extern int8_t dacEn;
 extern bool hw_afsk_dac_isr;
 
 static uint8_t N;                                                              // samples per symbol
-static enum ModemTxTestMode txTestState;                                       // current TX test mode
+static modemtxtestmode_t txTestState;                                          // current TX test mode
 static uint8_t demodCount;                                                     // actual number of parallel demodulators
 static uint8_t currentSymbol;                                                  // current symbol for NRZI encoding
 static uint8_t scrambledSymbol;                                                // current symbol after scrambling
@@ -164,9 +164,9 @@ static uint16_t sampleIndex = 0;
 static demod_state_t demodState[MODEM_MAX_DEMODULATOR_COUNT];
 
 modem_demod_config_t ModemConfig;
-float markFreq;                                                                // mark frequency
-float spaceFreq;                                                               // space frequency
-float baudRate;                                                                // baudrate
+float markFreq;  // mark frequency
+float spaceFreq; // space frequency
+float baudRate;  // baudrate
 
 /**
  * @brief BPF filter with 2200 Hz tone 6 dB preemphasis (it actually attenuates 1200 Hz tone by 6 dB)
@@ -309,7 +309,7 @@ void ModemGetSignalLevel(uint8_t modem, int8_t *peak, int8_t *valley, uint8_t *l
     *level = (100 * (int32_t)(demodState[modem].peak - demodState[modem].valley)) >> 13;
 }
 
-enum ModemPrefilter ModemGetFilterType(uint8_t modem) {
+modemprefilter_t ModemGetFilterType(uint8_t modem) {
     return demodState[modem].prefilter;
 }
 
@@ -550,7 +550,7 @@ static void decode(uint8_t symbol, uint8_t demod, uint16_t mV) {
     }
 }
 
-void ModemTxTestStart(enum ModemTxTestMode type) {
+void ModemTxTestStart(modemtxtestmode_t type) {
     if (txTestState != TEST_DISABLED) // TX test is already running
         ModemTxTestStop();            // stop this test
 

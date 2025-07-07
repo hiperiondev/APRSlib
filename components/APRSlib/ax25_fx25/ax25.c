@@ -114,7 +114,7 @@ typedef struct RxState_s {
     uint8_t receivedByte;               // byte being currently received
     uint8_t receivedBitIdx;             // bit index for recByte
     uint8_t rawData;                    // raw data being currently received
-    enum Ax25RxStage rx;                // current RX stage
+    ax25_rxstage_t rx;                  // current RX stage
     uint8_t frameReceived;              // frame received flag
 #ifdef ENABLE_FX25
     struct Fx25Mode *fx25Mode;
@@ -141,7 +141,7 @@ static bool txFrameBufferFull = false;
 static uint8_t txFx25Buffer[FX25_MAX_BLOCK_SIZE];
 static uint8_t txTagByteIdx = 0;
 #endif
-static uint8_t frameReceived; // a bitmap of receivers that received the frame
+static uint8_t frameReceived;        // a bitmap of receivers that received the frame
 static uint8_t txByte = 0;           // current TX byte
 static uint16_t txByteIdx = 0;       // current TX byte index
 static int8_t txBitIdx = 0;          // current bit index in txByte
@@ -542,7 +542,7 @@ bool Ax25ReadNextRxFrame(uint8_t **dst, uint16_t *size, int8_t *peak, int8_t *va
     return true;
 }
 
-enum Ax25RxStage Ax25GetRxStage(uint8_t modem) {
+ax25_rxstage_t Ax25GetRxStage(uint8_t modem) {
     return rxState[modem].rx;
 }
 

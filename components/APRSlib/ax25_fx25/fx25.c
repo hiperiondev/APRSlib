@@ -79,14 +79,14 @@ const fx25mode_t *Fx25GetModeForSize(uint16_t size) {
 }
 
 #ifdef FX25_PREGENERATE_POLYS
-static struct LwFecRS rs16, rs32, rs64;
+static lwfecrs_t rs16, rs32, rs64;
 #else
 static struct LwFecRS rs;
 #endif
 
 void Fx25Encode(uint8_t *buffer, const fx25mode_t *mode) {
 #ifdef FX25_PREGENERATE_POLYS
-    struct LwFecRS *rs = NULL;
+    lwfecrs_t *rs = NULL;
     switch (mode->T) {
         case 16:
             rs = &rs16;
@@ -110,7 +110,7 @@ void Fx25Encode(uint8_t *buffer, const fx25mode_t *mode) {
 
 bool Fx25Decode(uint8_t *buffer, const fx25mode_t *mode, uint8_t *fixed) {
 #ifdef FX25_PREGENERATE_POLYS
-    struct LwFecRS *rs = NULL;
+    lwfecrs_t *rs = NULL;
     switch (mode->T) {
         case 16:
             rs = &rs16;

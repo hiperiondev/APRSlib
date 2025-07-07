@@ -28,11 +28,11 @@ along with LwFEC.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * @brief Reed-Solomon module configuration structure
  */
-struct LwFecRS {
+typedef struct LwFecRS_s {
     uint8_t generator[RS_MAX_REDUNDANCY_BYTES + 1]; // generator polynomial
     uint8_t T;                                      // number of redundancy/parity bytes
     uint8_t fcr;                                    // first consecutive root index
-};
+} lwfecrs_t;
 
 /**
  * @brief Decode message using Reed-Solomon FEC
@@ -46,7 +46,7 @@ struct LwFecRS {
  * @param *fixed Output number of bytes corrected
  * @return True on success, false on failure
  */
-bool RsDecode(struct LwFecRS *rs, uint8_t *data, uint8_t size, uint8_t *fixed);
+bool RsDecode(lwfecrs_t *rs, uint8_t *data, uint8_t size, uint8_t *fixed);
 
 /**
  * @brief Encode message using Reed-Solomon FEC
@@ -54,7 +54,7 @@ bool RsDecode(struct LwFecRS *rs, uint8_t *data, uint8_t size, uint8_t *fixed);
  * @param *data Input/output buffer. Must be of size N = 255
  * @param size Data size = K
  */
-void RsEncode(struct LwFecRS *rs, uint8_t *data, uint8_t size);
+void RsEncode(lwfecrs_t *rs, uint8_t *data, uint8_t size);
 
 /**
  * @brief Initialize Reed-Solomon coder/decoder
@@ -64,6 +64,6 @@ void RsEncode(struct LwFecRS *rs, uint8_t *data, uint8_t size);
  * @param T Number of parity check bytes
  * @param fcr First consecutive root index
  */
-void RsInit(struct LwFecRS *rs, uint8_t T, uint8_t fcr);
+void RsInit(lwfecrs_t *rs, uint8_t T, uint8_t fcr);
 
 #endif
